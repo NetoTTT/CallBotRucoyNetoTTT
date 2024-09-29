@@ -77,7 +77,7 @@ client.on('messageCreate', async (message) => {
 
         const messagesToDelete = [];
         client.guilds.cache.forEach(async (guild) => {
-            const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
+            const callBossChannel = guild.channels.cache.find(channel => channel.name === callbossid);
             if (callBossChannel) {
                 const fetchedMessages = await callBossChannel.messages.fetch({ limit: 100 });
                 fetchedMessages.forEach(msg => {
