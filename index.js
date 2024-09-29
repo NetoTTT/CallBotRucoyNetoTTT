@@ -136,7 +136,35 @@ client.on('messageCreate', async (message) => {
 
     // Comando de ajuda
     if (message.content.startsWith('/callajuda')) {
-        const helpMessage = `...`; // Mensagem de ajuda conforme a versão anterior
+        const helpMessage = `
+        **Regras para o Uso do Bot:**
+        1. **Comando Básico**: Para invocar o bot, utilize o comando na seguinte estrutura:  
+           \`/callboss server.[o servidor] boss.[o boss]\`  
+           **Exemplo**: \`/callboss server.Sa1 boss.VK\`
+        2. **Formato Correto**: Certifique-se de usar o formato correto ao digitar o comando. A sintaxe deve ser respeitada.
+        3. **Canal Específico**: As mensagens devem ser enviadas no canal chamado \`#callbossnetottt\`.
+        4. **Respeito Mútuo**: Todos os usuários devem tratar os outros com respeito ao usar o bot.
+        5. **Apenas para Uso em Jogo**: Este bot é destinado apenas para fins relacionados ao jogo.
+        6. **Feedback e Relatos de Erros**: Se você encontrar um erro, entre em contato com o administrador do servidor ou com desenvolvedor NetoTTT Discord: netottt .
+        7. **Limite de Comandos**: Não envie comandos em excesso.
+
+        **Lista de Bosses e suas Abreviações:**
+        - Vampire King: VK
+        - Goblin Lord: GL
+        - Kamon the Cursed: KC
+        - Slime Lord: SL
+        - Drow Queen: DQ
+        - General Krinok: GK
+        - Goliath: GO
+        - Zarron Bravehorn: ZB
+        - Cerberus: CE
+        - Wicked Pumpkin: WP
+        - La Calaca: LC
+        - Haunted Willow: HW
+        - Evil Snowman: ES
+        - Santa Claus: SC
+        - Clyde Rabbit: CR
+        - Bonnie Rabbit: BR`; // Mensagem de ajuda conforme a versão anterior
 
         try {
             await message.author.send(helpMessage);
