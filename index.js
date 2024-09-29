@@ -17,7 +17,7 @@ client.once('ready', () => {
 // Função para criar os canais se não existirem
 async function createChannelsIfNotExists(guild) {
     await createChannelIfNotExists(guild, CALLBOSS_CHANNEL_NAME);
-   // await createCallBossIdChannel(guild);
+    // await createCallBossIdChannel(guild);
 }
 
 // Cria o canal principal
@@ -87,7 +87,7 @@ client.on('messageCreate', async (message) => {
             return;
         }
 
-        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss\n **Server:** ${server} **Boss:** ${boss} \n\n**Enviado por:** ${message.author.username} (ID: ${message.author.id}), da Guild **${message.guild.name}** **ID do Servidor:** ${message.guild.id}`;
+        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss\n **Server:** ${server} **Boss:** ${boss} \n\n**Enviado por:** ${message.author.username} da Guild **${message.guild.name}** \n\n **ID do(a) ${message.author.username}:** ${message.author.id} \n **ID do Servidor(Guild):** ${message.guild.id} `;
 
         client.guilds.cache.forEach(guild => {
             const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
@@ -99,22 +99,22 @@ client.on('messageCreate', async (message) => {
         });
 
         // Envio específico para seu servidor
-       /* if (message.guild.id === MY_SERVER_ID) {
-            const myServerResponse = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss (Informação para Controle)\n **Server:** ${server} **Boss:** ${boss} \n**ID do Servidor:** ${message.guild.id} \n\n**Enviado por:** ${message.author.username} (ID: ${message.author.id})`;
-
-            const myCallBossChannel = message.guild.channels.cache.find(channel => channel.name === CALLBOSS_ID_CHANNEL_NAME);
-
-            if (myCallBossChannel) {
-                // Verificando se o bot tem permissão para enviar mensagens
-                if (myCallBossChannel.permissionsFor(message.guild.me).has('SEND_MESSAGES')) {
-                    myCallBossChannel.send(myServerResponse).catch(console.error);
-                } else {
-                    console.error(`O bot não tem permissão para enviar mensagens no canal ${myCallBossChannel.name}`);
-                }
-            } else {
-                console.log(`Canal ${CALLBOSS_CHANNEL_NAME} não encontrado no servidor ${message.guild.name}`);
-            }
-        }*/
+        /* if (message.guild.id === MY_SERVER_ID) {
+             const myServerResponse = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss (Informação para Controle)\n **Server:** ${server} **Boss:** ${boss} \n**ID do Servidor:** ${message.guild.id} \n\n**Enviado por:** ${message.author.username} (ID: ${message.author.id})`;
+ 
+             const myCallBossChannel = message.guild.channels.cache.find(channel => channel.name === CALLBOSS_ID_CHANNEL_NAME);
+ 
+             if (myCallBossChannel) {
+                 // Verificando se o bot tem permissão para enviar mensagens
+                 if (myCallBossChannel.permissionsFor(message.guild.me).has('SEND_MESSAGES')) {
+                     myCallBossChannel.send(myServerResponse).catch(console.error);
+                 } else {
+                     console.error(`O bot não tem permissão para enviar mensagens no canal ${myCallBossChannel.name}`);
+                 }
+             } else {
+                 console.log(`Canal ${CALLBOSS_CHANNEL_NAME} não encontrado no servidor ${message.guild.name}`);
+             }
+         }*/
     }
 
     // Comando para apagar todas as mensagens do bot
@@ -138,7 +138,7 @@ client.on('messageCreate', async (message) => {
                     await msg.delete().catch(console.error);
                 });
 
-                messagesToDelete.length = 0; 
+                messagesToDelete.length = 0;
             }
         });
 
@@ -181,6 +181,28 @@ client.on('messageCreate', async (message) => {
             message.channel.send("Não consegui banir o servidor.");
         }
     }
+
+    // Comando para desbanir um usuário
+    if (message.content.startsWith('/unbanuser')) {
+        if (message.author.id !== AUTHORIZED_USER_ID) {
+            return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
+        }
+
+        const userId = message.content.split(' ')[1]; // Obtém o ID do usuário a ser desbanido
+
+        if (!userId) {
+            return message.reply("Por favor, forneça o ID do usuário a ser desbanido.");
+        }
+
+        try {
+            await message.guild.members.unban(userId); // Desbane o usuário
+            message.channel.send(`Usuário com ID ${userId} foi desbanido com sucesso!`);
+        } catch (error) {
+            console.error("Erro ao desbanir o usuário:", error);
+            message.channel.send("Não consegui desbanir o usuário. Verifique se o ID está correto e se o usuário foi banido anteriormente.");
+        }
+    }
+
 
     // Comando de ajuda
     if (message.content.startsWith('/callajuda')) {
