@@ -58,6 +58,10 @@ async function createCallBossIdChannel(guild) {
                     {
                         id: '1290057620391985224', // Coloque o ID do cargo de administradores
                         allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages], // Permite que os administradores vejam e enviem mensagens
+                    },
+                    {
+                        id: '1180272578141622302', // Coloque o ID do cargo de administradores
+                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages], // Permite que os bots vejam e enviem mensagens
                     }
                 ]
             });
