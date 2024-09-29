@@ -4,22 +4,30 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CALLBOSS_CHANNEL_NAME = 'callbossnetottt';
+const CALLBOSS_ID_CHANNEL_NAME = 'callbossid'; // Novo canal
 const AUTHORIZED_USER_ID = '929052615273250896'; // ID do usuário autorizado
 const MY_SERVER_ID = '1180256244066418769'; // Coloque aqui o ID do seu servidor
 
 client.once('ready', () => {
     console.log('Bot do Discord está online!');
-    client.guilds.cache.forEach(guild => createChannelIfNotExists(guild));
-    client.user.setActivity('Guild:Otakus', { type: 'PLAYING' });
+    client.guilds.cache.forEach(guild => createChannelsIfNotExists(guild));
+    client.user.setActivity('Guild:Otakus', { type: 'LISTENING' });
 });
 
-async function createChannelIfNotExists(guild) {
-    const channelExists = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
+// Função para criar os canais se não existirem
+async function createChannelsIfNotExists(guild) {
+    await createChannelIfNotExists(guild, CALLBOSS_CHANNEL_NAME);
+    await createCallBossIdChannel(guild);
+}
+
+// Cria o canal principal
+async function createChannelIfNotExists(guild, channelName) {
+    const channelExists = guild.channels.cache.find(channel => channel.name === channelName);
     if (!channelExists) {
         try {
             await guild.channels.create({
-                name: CALLBOSS_CHANNEL_NAME,
-                type: 0,
+                name: channelName,
+                type: 0, // 0 para texto
                 permissionOverwrites: [
                     {
                         id: guild.id,
@@ -27,10 +35,38 @@ async function createChannelIfNotExists(guild) {
                     }
                 ]
             });
-            console.log(`Canal ${CALLBOSS_CHANNEL_NAME} criado em ${guild.name}`);
+            console.log(`Canal ${channelName} criado em ${guild.name}`);
         } catch (error) {
             console.error(`Erro ao criar o canal em ${guild.name}:`, error);
         }
+    }
+}
+
+// Cria o canal callbossid com permissões para administradores
+async function createCallBossIdChannel(guild) {
+    const channelExists = guild.channels.cache.find(channel => channel.name === CALLBOSS_ID_CHANNEL_NAME);
+    if (!channelExists) {
+        try {
+            await guild.channels.create({
+                name: CALLBOSS_ID_CHANNEL_NAME,
+                type: 0, // 0 para texto
+                permissionOverwrites: [
+                    {
+                        id: guild.roles.everyone.id, // O cargo @everyone
+                        deny: [PermissionsBitField.Flags.ViewChannel], // Nega a visualização do canal para everyone
+                    },
+                    {
+                        id: '1290057620391985224', // Coloque o ID do cargo de administradores
+                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages], // Permite que os administradores vejam e enviem mensagens
+                    }
+                ]
+            });
+            console.log(`Canal ${CALLBOSS_ID_CHANNEL_NAME} criado em ${guild.name} com permissões para administradores.`);
+        } catch (error) {
+            console.error(`Erro ao criar o canal ${CALLBOSS_ID_CHANNEL_NAME} em ${guild.name}:`, error);
+        }
+    } else {
+        console.log(`Canal ${CALLBOSS_ID_CHANNEL_NAME} já existe em ${guild.name}.`);
     }
 }
 
@@ -54,17 +90,25 @@ client.on('messageCreate', async (message) => {
             if (callBossChannel) {
                 callBossChannel.send(response).catch(console.error);
             } else {
-                createChannelIfNotExists(guild);
+                createChannelsIfNotExists(guild);
             }
         });
 
         // Envio específico para seu servidor
         if (message.guild.id === MY_SERVER_ID) {
             const myServerResponse = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss (Informação para Controle)\n **Server:** ${server} **Boss:** ${boss} \n**ID do Servidor:** ${message.guild.id} \n\n**Enviado por:** ${message.author.username} (ID: ${message.author.id})`;
-            
-            const myCallBossChannel = message.guild.channels.cache.find(channel => channel.name === callbossid);
+
+            const myCallBossChannel = message.guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
+
             if (myCallBossChannel) {
-                myCallBossChannel.send(myServerResponse).catch(console.error);
+                // Verificando se o bot tem permissão para enviar mensagens
+                if (myCallBossChannel.permissionsFor(message.guild.me).has('SEND_MESSAGES')) {
+                    myCallBossChannel.send(myServerResponse).catch(console.error);
+                } else {
+                    console.error(`O bot não tem permissão para enviar mensagens no canal ${myCallBossChannel.name}`);
+                }
+            } else {
+                console.log(`Canal ${CALLBOSS_CHANNEL_NAME} não encontrado no servidor ${message.guild.name}`);
             }
         }
     }
@@ -177,7 +221,7 @@ client.on('messageCreate', async (message) => {
 });
 
 client.on('guildCreate', guild => {
-    createChannelIfNotExists(guild);
+    createChannelsIfNotExists(guild);
 });
 
 client.login(DISCORD_TOKEN);
