@@ -98,7 +98,7 @@ client.on('messageCreate', async (message) => {
         if (message.guild.id === MY_SERVER_ID) {
             const myServerResponse = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss (Informação para Controle)\n **Server:** ${server} **Boss:** ${boss} \n**ID do Servidor:** ${message.guild.id} \n\n**Enviado por:** ${message.author.username} (ID: ${message.author.id})`;
 
-            const myCallBossChannel = message.guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
+            const myCallBossChannel = message.guild.channels.cache.find(channel => channel.name === CALLBOSS_ID_CHANNEL_NAME);
 
             if (myCallBossChannel) {
                 // Verificando se o bot tem permissão para enviar mensagens
