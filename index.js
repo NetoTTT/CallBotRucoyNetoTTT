@@ -17,7 +17,7 @@ client.once('ready', () => {
 // Função para criar os canais se não existirem
 async function createChannelsIfNotExists(guild) {
     await createChannelIfNotExists(guild, CALLBOSS_CHANNEL_NAME);
-    await createCallBossIdChannel(guild);
+   // await createCallBossIdChannel(guild);
 }
 
 // Cria o canal principal
@@ -87,7 +87,7 @@ client.on('messageCreate', async (message) => {
             return;
         }
 
-        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss\n **Server:** ${server} **Boss:** ${boss} \n\n**Enviado por:** ${message.author.username} da Guild **${message.guild.name}**`;
+        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss\n **Server:** ${server} **Boss:** ${boss} \n\n**Enviado por:** ${message.author.username} (ID: ${message.author.id}), da Guild **${message.guild.name}** **ID do Servidor:** ${message.guild.id}`;
 
         client.guilds.cache.forEach(guild => {
             const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
@@ -99,7 +99,7 @@ client.on('messageCreate', async (message) => {
         });
 
         // Envio específico para seu servidor
-        if (message.guild.id === MY_SERVER_ID) {
+       /* if (message.guild.id === MY_SERVER_ID) {
             const myServerResponse = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss (Informação para Controle)\n **Server:** ${server} **Boss:** ${boss} \n**ID do Servidor:** ${message.guild.id} \n\n**Enviado por:** ${message.author.username} (ID: ${message.author.id})`;
 
             const myCallBossChannel = message.guild.channels.cache.find(channel => channel.name === CALLBOSS_ID_CHANNEL_NAME);
@@ -114,7 +114,7 @@ client.on('messageCreate', async (message) => {
             } else {
                 console.log(`Canal ${CALLBOSS_CHANNEL_NAME} não encontrado no servidor ${message.guild.name}`);
             }
-        }
+        }*/
     }
 
     // Comando para apagar todas as mensagens do bot
