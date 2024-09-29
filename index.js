@@ -16,6 +16,8 @@ client.once('ready', () => {
     console.log('Bot do Discord está online!');
     // Cria o canal nos servidores em que o bot estiver
     client.guilds.cache.forEach(guild => createChannelIfNotExists(guild));
+    client.user.setActivity('Rucoy Online (Guild:Otakus)', { type: 'PLAYING' });
+
 });
 
 // Função para criar o canal caso não exista
@@ -151,6 +153,7 @@ client.on('messageCreate', async (message) => {
 client.on('guildCreate', guild => {
     createChannelIfNotExists(guild);
 });
+
 
 // Logar o bot
 client.login(DISCORD_TOKEN);
