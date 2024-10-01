@@ -299,9 +299,8 @@ client.on('messageCreate', async (message) => {
         - \`/unmute [user_id]\`: Desmuta um usuário.
         - \`/ping\`: Verifica a latência do bot.
         - \`/restart\`: Reinicia o bot.
-         \`/clearuser\`: Remove todas as mensagens de um usuário específico dentro de um intervalo de mensagens definido.
+        - \`/clearuser\`: Remove todas as mensagens de um usuário específico dentro de um intervalo de mensagens definido.
 
-    
         **Lista de Bosses e suas Abreviações:**
         - Vampire King: VK
         - Goblin Lord: GL
@@ -319,7 +318,7 @@ client.on('messageCreate', async (message) => {
         - Santa Claus: SC
         - Clyde Rabbit: CR
         - Bonnie Rabbit: BR`;
-    
+
         try {
             await message.author.send(helpMessage);
             message.channel.send("Enviei as informações de ajuda para você em DM!");
@@ -328,7 +327,7 @@ client.on('messageCreate', async (message) => {
             message.channel.send("Não consegui enviar as informações de ajuda em DM. Você pode ter DMs desativadas.");
         }
     }
-
+    
     //Comando de ajuda em ingles
     if (message.content.startsWith('/callhelp')) {
         const helpMessage = `
