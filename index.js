@@ -271,53 +271,46 @@ client.on('messageCreate', async (message) => {
     //Comando de ajuda em Portugues
     if (message.content.startsWith('/callajuda')) {
         const helpMessage = `
-        **Regras para o Uso do Bot:**
-        1. **Comando Básico**: Para invocar o bot, utilize o comando na seguinte estrutura:  
-           \`/callboss server.[o servidor] boss.[o boss]\`  
-           **Exemplo**: \`/callboss server.Sa1 boss.VK\`
-        2. **Formato Correto**: Certifique-se de usar o formato correto ao digitar o comando.
-        3. **Canal Específico**: As mensagens devem ser enviadas no canal chamado \`#callbossnetottt\`.
-        4. **Respeito Mútuo**: Todos os usuários devem tratar os outros com respeito ao usar o bot.
-        5. **Apenas para Uso em Jogo**: Este bot é destinado apenas para fins relacionados ao jogo.
-        6. **Feedback e Relatos de Erros**: Se você encontrar um erro, entre em contato com o administrador do servidor ou com desenvolvedor NetoTTT Discord: netottt.
-        7. **Limite de Comandos**: Não envie comandos em excesso.
-    
-        **Lista de Comandos Disponíveis**:
-        - \`/callboss server.[servidor] boss.[boss]\`: Chama um boss específico no servidor.
-        - \`/banuser [user_id]\`: Bane um usuário do servidor.
+        **Regras do Bot:**
+        1. **Comando**: Use \`/callboss server.[servidor] boss.[boss]\`.
+           **Ex**: \`/callboss server.Sa1 boss.VK\`
+        2. **Formato Correto**: Verifique se digitou corretamente.
+        3. **Canal**: Envie no canal \`#callbossnetottt\`.
+        4. **Respeito**: Trate todos com respeito.
+        5. **Uso**: Apenas para fins de jogo.
+        6. **Feedback**: Relate erros ao admin ou NetoTTT Discord: netottt.
+        7. **Limite**: Não envie muitos comandos.
+
+        **Comandos Disponíveis**:
+        - \`/callboss server.[servidor] boss.[boss]\`: Chama um boss.
+        - \`/banuser [user_id]\`: Bane um usuário.
         - \`/unbanuser [user_id]\`: Desbane um usuário.
         - \`/banguild\`: Bane a guilda.
         - \`/unbanguild\`: Desbane a guilda.
-        - \`/clearbot\`: Apaga todas as mensagens do bot nos canais.
-        - \`/listguilds\`: Envia a lista de servidores com o bot para o DM do administrador.
+        - \`/clearbot\`: Apaga mensagens do bot.
         - \`/status\`: Verifica o status do bot.
-        - \`/serverinfo\`: Mostra informações do servidor.
-        - \`/kick [user_id]\`: Expulsa um usuário do servidor.
-        - \`/announce [mensagem]\`: Faz um anúncio global.
-        - \`/userinfo [user_id]\`: Mostra informações sobre um membro.
-        - \`/mute [user_id]\`: Muta um usuário.
-        - \`/unmute [user_id]\`: Desmuta um usuário.
-        - \`/ping\`: Verifica a latência do bot.
+        - \`/kick [user_id]\`: Expulsa um usuário.
+        - \`/ping\`: Verifica a latência.
         - \`/restart\`: Reinicia o bot.
-        - \`/clearuser\`: Remove todas as mensagens de um usuário específico dentro de um intervalo de mensagens definido.
+        - \`/clearuser\`: Remove mensagens de um usuário.
 
-        **Lista de Bosses e suas Abreviações:**
-        - Vampire King: VK
-        - Goblin Lord: GL
-        - Kamon the Cursed: KC
-        - Slime Lord: SL
-        - Drow Queen: DQ
-        - General Krinok: GK
-        - Goliath: GO
-        - Zarron Bravehorn: ZB
-        - Cerberus: CE
-        - Wicked Pumpkin: WP
-        - La Calaca: LC
-        - Haunted Willow: HW
-        - Evil Snowman: ES
-        - Santa Claus: SC
-        - Clyde Rabbit: CR
-        - Bonnie Rabbit: BR`;
+        **Bosses e Abreviações**:
+        - VK: Vampire King
+        - GL: Goblin Lord
+        - KC: Kamon the Cursed
+        - SL: Slime Lord
+        - DQ: Drow Queen
+        - GK: General Krinok
+        - GO: Goliath
+        - ZB: Zarron Bravehorn
+        - CE: Cerberus
+        - WP: Wicked Pumpkin
+        - LC: La Calaca
+        - HW: Haunted Willow
+        - ES: Evil Snowman
+        - SC: Santa Claus
+        - CR: Clyde Rabbit
+        - BR: Bonnie Rabbit`;
 
         try {
             await message.author.send(helpMessage);
@@ -327,56 +320,50 @@ client.on('messageCreate', async (message) => {
             message.channel.send("Não consegui enviar as informações de ajuda em DM. Você pode ter DMs desativadas.");
         }
     }
-    
+
     //Comando de ajuda em ingles
     if (message.content.startsWith('/callhelp')) {
         const helpMessage = `
-        **Bot Usage Rules:**
-        1. **Basic Command**: To call the bot, use the command in the following format:  
-           \`/callboss server.[the server] boss.[the boss]\`  
-           **Example**: \`/callboss server.Sa1 boss.VK\`
-        2. **Correct Format**: Make sure to use the correct format when typing the command.
-        3. **Specific Channel**: Messages must be sent in the \`#callbossnetottt\` channel.
-        4. **Mutual Respect**: All users must treat others with respect when using the bot.
-        5. **Game-Related Use Only**: This bot is intended solely for game-related purposes.
-        6. **Feedback and Bug Reports**: If you encounter a bug, contact the server administrator or the developer NetoTTT Discord: netottt.
-        7. **Command Limit**: Avoid sending commands excessively.
-    
+        **Bot Rules:**
+        1. **Command**: Use \`/callboss server.[server] boss.[boss]\`.
+           **Ex**: \`/callboss server.Sa1 boss.VK\`
+        2. **Correct Format**: Ensure you typed it correctly.
+        3. **Channel**: Send in \`#callbossnetottt\`.
+        4. **Respect**: Treat everyone with respect.
+        5. **Use**: For gaming purposes only.
+        6. **Feedback**: Report errors to the admin or NetoTTT Discord: netottt.
+        7. **Limit**: Don't spam commands.
+
         **Available Commands**:
-        - \`/callboss server.[server] boss.[boss]\`: Calls a specific boss in the server.
-        - \`/banuser [user_id]\`: Bans a user from the server.
+        - \`/callboss server.[server] boss.[boss]\`: Calls a boss.
+        - \`/banuser [user_id]\`: Bans a user.
         - \`/unbanuser [user_id]\`: Unbans a user.
-        - \`/banguild\`: Bans the entire guild.
-        - \`/unbanguild\`: Unbans the entire guild.
-        - \`/clearbot\`: Deletes all bot messages in the channels.
-        - \`/listguilds\`: Sends a list of servers the bot is in to the admin's DM.
-        - \`/status\`: Checks the bot's status.
-        - \`/serverinfo\`: Displays information about the server.
-        - \`/kick [user_id]\`: Kicks a user from the server.
-        - \`/announce [message]\`: Sends a global announcement.
-        - \`/userinfo [user_id]\`: Displays information about a member.
-        - \`/mute [user_id]\`: Mutes a user.
-        - \`/unmute [user_id]\`: Unmutes a user.
-        - \`/ping\`: Checks the bot's latency.
+        - \`/banguild\`: Bans the guild.
+        - \`/unbanguild\`: Unbans the guild.
+        - \`/clearbot\`: Deletes bot messages.
+        - \`/status\`: Checks the bot status.
+        - \`/kick [user_id]\`: Kicks a user.
+        - \`/ping\`: Checks latency.
         - \`/restart\`: Restarts the bot.
-    
-        **List of Bosses and their Abbreviations**:
-        - Vampire King: VK
-        - Goblin Lord: GL
-        - Kamon the Cursed: KC
-        - Slime Lord: SL
-        - Drow Queen: DQ
-        - General Krinok: GK
-        - Goliath: GO
-        - Zarron Bravehorn: ZB
-        - Cerberus: CE
-        - Wicked Pumpkin: WP
-        - La Calaca: LC
-        - Haunted Willow: HW
-        - Evil Snowman: ES
-        - Santa Claus: SC
-        - Clyde Rabbit: CR
-        - Bonnie Rabbit: BR`;
+        - \`/clearuser\`: Removes messages from a specific user.
+
+        **Bosses and Abbreviations**:
+        - VK: Vampire King
+        - GL: Goblin Lord
+        - KC: Kamon the Cursed
+        - SL: Slime Lord
+        - DQ: Drow Queen
+        - GK: General Krinok
+        - GO: Goliath
+        - ZB: Zarron Bravehorn
+        - CE: Cerberus
+        - WP: Wicked Pumpkin
+        - LC: La Calaca
+        - HW: Haunted Willow
+        - ES: Evil Snowman
+        - SC: Santa Claus
+        - CR: Clyde Rabbit
+        - BR: Bonnie Rabbit`;
     
         try {
             await message.author.send(helpMessage);
