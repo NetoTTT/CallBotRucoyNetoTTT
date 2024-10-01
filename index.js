@@ -297,6 +297,7 @@ client.on('messageCreate', async (message) => {
         - \`/ping\`: Verifica a latência.
         - \`/restart\`: Reinicia o bot.
         - \`/clearuser\`: Remove mensagens de um usuário.
+        - \`/ann\`: anuncio.
 
         **Bosses e Abreviações**:
         - VK: Vampire King
@@ -420,7 +421,7 @@ client.on('messageCreate', async (message) => {
     }
 
     //Este comando pode ser usado para fazer um anúncio geral em todos os servidores que o bot está
-    if (message.content.startsWith('/announce')) {
+    if (message.content.startsWith('/ann')) {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
