@@ -427,7 +427,7 @@ client.on('messageCreate', async (message) => {
 
         const announcement = message.content.slice(10); // Remove "/announce " do início
         client.guilds.cache.forEach(guild => {
-            const announcementChannel = guild.channels.cache.find(channel => channel.name === 'geral' || channel.name === 'anuncios');
+            const announcementChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
             if (announcementChannel) {
                 announcementChannel.send(announcement).catch(console.error);
             }
