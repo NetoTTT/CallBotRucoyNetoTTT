@@ -144,7 +144,7 @@ client.on('messageCreate', async (message) => {
         }
     }
 
-    
+
 
     // Comando para listar os servidores onde o bot está presente
     if (message.content.startsWith('/listguilds')) {
@@ -182,30 +182,36 @@ client.on('messageCreate', async (message) => {
             return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
         }
 
-        const messagesToDelete = [];
-        client.guilds.cache.forEach(async (guild) => {
+        // Usar uma função assíncrona para esperar as operações de deletar mensagens
+        const deleteBotMessages = async (guild) => {
             const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
             if (callBossChannel) {
-
-                //Apaga as mensagens
                 const fetchedMessages = await callBossChannel.messages.fetch({ limit: 100 });
-                fetchedMessages.forEach(msg => {
-                    if (msg.author.id === client.user.id) {
-                        messagesToDelete.push(msg);
-                    }
-                });
+                const messagesToDelete = fetchedMessages.filter(msg => msg.author.id === client.user.id);
 
-                messagesToDelete.forEach(async (msg) => {
-                    await msg.delete().catch(console.error);
-                });
+                // Deletar mensagens do bot
+                await Promise.all(messagesToDelete.map(msg => msg.delete().catch(console.error)));
 
-                messagesToDelete.length = 0;
+                return true; // Indica que as mensagens foram deletadas
+            } else {
+                createChannelsIfNotExists(guild);
+                return false; // Indica que o canal não foi encontrado
             }
-        });
+        };
 
-        // Avisa que as mensagens foram apagadas
+        // Executar a deleção de mensagens em todos os servidores
+        const deletePromises = client.guilds.cache.map(guild => deleteBotMessages(guild));
+
+        // Aguardar todas as promessas
+        await Promise.all(deletePromises);
+
+        // Enviar mensagem ao canal indicando que as mensagens foram apagadas
         const response = 'As mensagens foram apagadas pelo desenvolvedor NetoTTT';
-        callBossChannel.send(response).catch(console.error);
+        const channelToNotify = client.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
+        if (channelToNotify) {
+            await channelToNotify.send(response).catch(console.error);
+        }
+
         message.channel.send("Todas as mensagens do bot foram apagadas!");
     }
 
@@ -214,14 +220,14 @@ client.on('messageCreate', async (message) => {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
         }
-    
+
         const userId = message.content.split(' ')[1]; // Obtém o ID do usuário a ser banido
         const user = message.guild.members.cache.get(userId);
-    
+
         if (!user) {
             return message.reply("Usuário não encontrado.");
         }
-    
+
         try {
             await user.ban({ reason: 'Banido pelo bot.' });
             message.channel.send(`Usuário ${user.user.tag} foi banido com sucesso!`);
@@ -230,7 +236,7 @@ client.on('messageCreate', async (message) => {
             message.channel.send("Não consegui banir o usuário.");
         }
     }
-    
+
 
     // Comando para banir a guilda
     if (message.content.startsWith('/banguild')) {
@@ -364,7 +370,7 @@ client.on('messageCreate', async (message) => {
         - SC: Santa Claus
         - CR: Clyde Rabbit
         - BR: Bonnie Rabbit`;
-    
+
         try {
             await message.author.send(helpMessage);
             message.channel.send("I've sent the help information to you via DM!");
@@ -378,7 +384,7 @@ client.on('messageCreate', async (message) => {
     if (message.content.startsWith('/status')) {
         message.reply("O bot está online e funcionando corretamente!");
     }
-    
+
     //Exibe informações sobre o servidor, como o número de membros, nome do dono, região, e número de canais
     if (message.content.startsWith('/serverinfo')) {
         const { guild } = message;
@@ -392,20 +398,20 @@ client.on('messageCreate', async (message) => {
         `;
         message.channel.send(serverInfo);
     }
-    
+
     //Remove um usuário do servidor
     if (message.content.startsWith('/kick')) {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
-    
+
         const userId = message.content.split(' ')[1];
         const user = message.guild.members.cache.get(userId);
-    
+
         if (!user) {
             return message.reply("Usuário não encontrado.");
         }
-    
+
         try {
             await user.kick({ reason: 'Removido pelo bot.' });
             message.channel.send(`Usuário ${user.user.tag} foi removido com sucesso!`);
@@ -414,13 +420,13 @@ client.on('messageCreate', async (message) => {
             message.channel.send("Não consegui remover o usuário.");
         }
     }
-    
+
     //Este comando pode ser usado para fazer um anúncio geral em todos os servidores que o bot está
     if (message.content.startsWith('/announce')) {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
-    
+
         const announcement = message.content.slice(10); // Remove "/announce " do início
         client.guilds.cache.forEach(guild => {
             const announcementChannel = guild.channels.cache.find(channel => channel.name === 'geral' || channel.name === 'anuncios');
@@ -428,7 +434,7 @@ client.on('messageCreate', async (message) => {
                 announcementChannel.send(announcement).catch(console.error);
             }
         });
-    
+
         message.channel.send("O anúncio foi enviado para todos os servidores.");
     }
 
@@ -436,11 +442,11 @@ client.on('messageCreate', async (message) => {
     if (message.content.startsWith('/userinfo')) {
         const userId = message.content.split(' ')[1];
         const user = message.guild.members.cache.get(userId);
-    
+
         if (!user) {
             return message.reply("Usuário não encontrado.");
         }
-    
+
         const userInfo = `
         **Nome**: ${user.user.username}
         **ID**: ${user.user.id}
@@ -456,19 +462,19 @@ client.on('messageCreate', async (message) => {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
-    
+
         const userId = message.content.split(' ')[1];
         const user = message.guild.members.cache.get(userId);
-    
+
         if (!user) {
             return message.reply("Usuário não encontrado.");
         }
-    
+
         const muteRole = message.guild.roles.cache.find(role => role.name === 'Muted');
         if (!muteRole) {
             return message.reply("O cargo 'Muted' não foi encontrado.");
         }
-    
+
         try {
             await user.roles.add(muteRole);
             message.channel.send(`${user.user.tag} foi mutado.`);
@@ -477,25 +483,25 @@ client.on('messageCreate', async (message) => {
             message.channel.send("Não consegui mutar o usuário.");
         }
     }
-    
+
     //Remove o mudo de um usuário
     if (message.content.startsWith('/unmute')) {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
-    
+
         const userId = message.content.split(' ')[1];
         const user = message.guild.members.cache.get(userId);
-    
+
         if (!user) {
             return message.reply("Usuário não encontrado.");
         }
-    
+
         const muteRole = message.guild.roles.cache.find(role => role.name === 'Muted');
         if (!muteRole) {
             return message.reply("O cargo 'Muted' não foi encontrado.");
         }
-    
+
         try {
             await user.roles.remove(muteRole);
             message.channel.send(`${user.user.tag} foi desmutado.`);
@@ -504,7 +510,7 @@ client.on('messageCreate', async (message) => {
             message.channel.send("Não consegui desmutar o usuário.");
         }
     }
-    
+
     //Verifica a latência do bot
     if (message.content.startsWith('/ping')) {
         const ping = Date.now() - message.createdTimestamp;
@@ -516,13 +522,13 @@ client.on('messageCreate', async (message) => {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
-    
+
         message.channel.send("Reiniciando o bot...")
             .then(() => process.exit(0)) // Força o processo a terminar, reinicializando o bot.
             .catch(error => console.error("Erro ao reiniciar o bot:", error));
     }
-    
-    
+
+
 });
 
 client.on('guildCreate', guild => {
