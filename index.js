@@ -192,24 +192,22 @@ client.on('messageCreate', async (message) => {
                 // Deletar mensagens do bot
                 await Promise.all(messagesToDelete.map(msg => msg.delete().catch(console.error)));
 
-                return true; // Indica que as mensagens foram deletadas
+                return callBossChannel; // Retorna o canal onde as mensagens foram deletadas
             } else {
                 createChannelsIfNotExists(guild);
-                return false; // Indica que o canal não foi encontrado
+                return null; // Indica que o canal não foi encontrado
             }
         };
 
-        // Executar a deleção de mensagens em todos os servidores
-        const deletePromises = client.guilds.cache.map(guild => deleteBotMessages(guild));
+        // Executar a deleção de mensagens em todos os servidores e coletar canais
+        const deleteResults = await Promise.all(client.guilds.cache.map(guild => deleteBotMessages(guild)));
 
-        // Aguardar todas as promessas
-        await Promise.all(deletePromises);
-
-        // Enviar mensagem ao canal indicando que as mensagens foram apagadas
+        // Enviar mensagem ao canal indicando que as mensagens foram apagadas em cada canal encontrado
         const response = 'As mensagens foram apagadas pelo desenvolvedor NetoTTT';
-        const channelToNotify = client.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
-        if (channelToNotify) {
-            await channelToNotify.send(response).catch(console.error);
+        for (const channel of deleteResults) {
+            if (channel) {
+                await channel.send(response).catch(console.error);
+            }
         }
 
         message.channel.send("Todas as mensagens do bot foram apagadas!");
