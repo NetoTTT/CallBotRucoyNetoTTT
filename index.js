@@ -203,7 +203,7 @@ client.on('messageCreate', async (message) => {
         const deleteResults = await Promise.all(client.guilds.cache.map(guild => deleteBotMessages(guild)));
 
         // Enviar mensagem ao canal indicando que as mensagens foram apagadas em cada canal encontrado
-        const response = 'As mensagens foram apagadas pelo desenvolvedor NetoTTT';
+        const response = 'As mensagens foram apagadas pelo desenvolvedor NetoTTT\nThe messages were deleted by developer NetoTTT';
         for (const channel of deleteResults) {
             if (channel) {
                 await channel.send(response).catch(console.error);
