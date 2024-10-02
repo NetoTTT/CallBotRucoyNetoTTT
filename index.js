@@ -1,5 +1,7 @@
 const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
 require('./server');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
@@ -76,6 +78,65 @@ async function createCallBossIdChannel(guild) {
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
+
+    if (message.content.startsWith('/exp')) {
+        const args = message.content.split(' ').slice(1);
+        const levelAtual = parseInt(args[0]); // Primeiro argumento: nível atual
+        const levelDesejado = parseInt(args[1]); // Segundo argumento: nível desejado
+        const xpPorHora = parseInt(args[2]); // Terceiro argumento: XP por hora
+
+        if (isNaN(levelAtual) || isNaN(levelDesejado) || isNaN(xpPorHora)) {
+            return message.channel.send('Por favor, forneça os níveis e a experiência por hora corretamente. Exemplo: !exp 200 300 3600');
+        }
+
+        const url = 'https://www.rucoystats.com/tables/skills'; // Coloque a URL correta aqui
+
+        try {
+            // Fazer a requisição para a URL
+            const response = await axios.get(url);
+            const data = response.data;
+
+            // Usar cheerio para carregar o HTML
+            const $ = cheerio.load(data);
+
+            // Armazenar dados de experiência
+            const expData = [];
+
+            // Supondo que a tabela tenha a classe '.exp-table' e as colunas corretas
+            $('.exp-table tr').each((index, element) => {
+                const level = $(element).find('td.level').text().trim();
+                const expToNext = $(element).find('td.exp-to-next').text().trim(); // Ajuste conforme a estrutura da tabela
+                const totalExp = $(element).find('td.total-exp').text().trim(); // Ajuste conforme a estrutura da tabela
+
+                if (level && expToNext && totalExp) {
+                    expData.push({
+                        level: parseInt(level),
+                        expToNext: parseInt(expToNext),
+                        totalExp: parseInt(totalExp),
+                    });
+                }
+            });
+
+            // Calcular a experiência necessária
+            const expNecessaria = expData.reduce((sum, row) => {
+                if (row.level > levelAtual && row.level <= levelDesejado) {
+                    return sum + row.expToNext;
+                }
+                return sum;
+            }, 0);
+
+            // Calcular o tempo necessário para alcançar o nível desejado
+            const horasNecessarias = expNecessaria / xpPorHora;
+            const horasInteiras = Math.floor(horasNecessarias);
+            const minutos = Math.floor((horasNecessarias - horasInteiras) * 60);
+
+            // Enviar a mensagem com o resultado
+            message.channel.send(`Para subir do nível ${levelAtual} para ${levelDesejado}, você precisará de ${expNecessaria} XP, que levará aproximadamente ${horasInteiras}h ${minutos}m com ${xpPorHora} XP/hora.`);
+        } catch (error) {
+            console.error(error);
+            message.channel.send('Ocorreu um erro ao buscar os dados.');
+        }
+    }
 
     // Comando para chamar o boss
     if (message.content.startsWith('/callboss')) {
