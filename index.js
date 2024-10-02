@@ -95,15 +95,22 @@ client.on('messageCreate', async (message) => {
             // Usar cheerio para carregar o HTML
             const $ = cheerio.load(data);
     
-            // Selecionar o tbody da tabela usando a classe
+            // Selecionar o tbody da tabela
             const expData = [];
-            const tbody = $('tbody'); // Seleciona todos os tbody; pode ser mais específico se necessário
+            const tbody = $('table.table-hover tbody'); // Seleciona o tbody da tabela com a classe 'table-hover'
     
+            // Verifica se a tabela foi encontrada
+            if (tbody.length === 0) {
+                return message.channel.send('Tabela não encontrada. Verifique a estrutura da página.');
+            }
+    
+            // Extrair dados da tabela
             tbody.find('tr').each((index, element) => {
                 const level = $(element).find('td').eq(0).text().trim(); // Primeiro td: Nível
                 const expToNext = $(element).find('td').eq(1).text().trim(); // Segundo td: XP até o próximo nível
                 const totalExp = $(element).find('td').eq(2).text().trim(); // Terceiro td: XP total
     
+                // Adiciona os dados se não estiverem vazios
                 if (level && expToNext && totalExp) {
                     expData.push({
                         level: parseInt(level),
@@ -113,8 +120,9 @@ client.on('messageCreate', async (message) => {
                 }
             });
     
-            // Log para ver quantas entradas foram adicionadas
-            console.log(`Total de níveis lidos: ${expData.length}`);
+            // Log para verificar os dados extraídos
+            console.log(`Dados extraídos: ${JSON.stringify(expData, null, 2)}`);
+            console.log(`Total de níveis lidos: ${expData.length}`); // Log do total de níveis lidos
     
             // Validar se expData contém dados suficientes
             if (skillAtual < 55 || skillDesejada > 1000) {
@@ -146,6 +154,7 @@ client.on('messageCreate', async (message) => {
             message.channel.send('Ocorreu um erro ao buscar os dados.');
         }
     }
+    
     
     
 
