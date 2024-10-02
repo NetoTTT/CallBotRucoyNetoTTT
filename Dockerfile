@@ -1,5 +1,4 @@
- 
-FROM node:14
+FROM node:16
 
 # Instala as dependências necessárias para o Puppeteer
 RUN apt-get update && apt-get install -y \
