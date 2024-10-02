@@ -85,9 +85,6 @@ client.on('messageCreate', async (message) => {
         const skillDesejada = parseInt(args[2]); // Segundo argumento: skill desejada
         const xpPorHora = parseInt(args[3]); // Terceiro argumento: XP por hora
     
-        // Log dos valores para depuração
-        console.log(`Skill Atual: ${skillAtual}, Skill Desejada: ${skillDesejada}, XP por Hora: ${xpPorHora}`);
-    
         const url = 'https://www.rucoystats.com/tables/skills'; // Coloque a URL correta aqui
     
         try {
@@ -98,14 +95,14 @@ client.on('messageCreate', async (message) => {
             // Usar cheerio para carregar o HTML
             const $ = cheerio.load(data);
     
-            // Selecionar o tbody com o atributo _ngcontent-cmf-c25
+            // Selecionar o tbody da tabela usando a classe
             const expData = [];
-            const tbody = $('tbody[_ngcontent-cmf-c25]');
+            const tbody = $('tbody'); // Seleciona todos os tbody; pode ser mais específico se necessário
     
             tbody.find('tr').each((index, element) => {
-                const level = $(element).find('td').eq(0).text(); // Primeiro td: Nível
-                const expToNext = $(element).find('td').eq(1).text(); // Segundo td: XP até o próximo nível
-                const totalExp = $(element).find('td').eq(2).text(); // Terceiro td: XP total
+                const level = $(element).find('td').eq(0).text().trim(); // Primeiro td: Nível
+                const expToNext = $(element).find('td').eq(1).text().trim(); // Segundo td: XP até o próximo nível
+                const totalExp = $(element).find('td').eq(2).text().trim(); // Terceiro td: XP total
     
                 if (level && expToNext && totalExp) {
                     expData.push({
@@ -115,6 +112,9 @@ client.on('messageCreate', async (message) => {
                     });
                 }
             });
+    
+            // Log para ver quantas entradas foram adicionadas
+            console.log(`Total de níveis lidos: ${expData.length}`);
     
             // Validar se expData contém dados suficientes
             if (skillAtual < 55 || skillDesejada > 1000) {
@@ -128,6 +128,7 @@ client.on('messageCreate', async (message) => {
                 if (expData[i]) { // Verifica se expData[i] está definido
                     experienciaTotalNecessaria += expData[i].expToNext;
                 } else {
+                    console.log(`Índice fora do alcance: ${i}`);
                     return message.channel.send('Erro ao acessar os dados de experiência. Verifique a tabela.');
                 }
             }
@@ -145,6 +146,7 @@ client.on('messageCreate', async (message) => {
             message.channel.send('Ocorreu um erro ao buscar os dados.');
         }
     }
+    
     
 
     // Comando para chamar o boss
