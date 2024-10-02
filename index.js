@@ -84,26 +84,29 @@ client.on('messageCreate', async (message) => {
         const skillAtual = parseInt(args[1]); // Primeiro argumento: skill atual
         const skillDesejada = parseInt(args[2]); // Segundo argumento: skill desejada
         const xpPorHora = parseInt(args[3]); // Terceiro argumento: XP por hora
-
+    
+        // Log dos valores para depuração
+        console.log(`Skill Atual: ${skillAtual}, Skill Desejada: ${skillDesejada}, XP por Hora: ${xpPorHora}`);
+    
         const url = 'https://www.rucoystats.com/tables/skills'; // Coloque a URL correta aqui
-
+    
         try {
             // Fazer a requisição para a URL
             const response = await axios.get(url);
             const data = response.data;
-
+    
             // Usar cheerio para carregar o HTML
             const $ = cheerio.load(data);
-
+    
             // Selecionar o tbody com o atributo _ngcontent-cmf-c25
             const expData = [];
             const tbody = $('tbody[_ngcontent-cmf-c25]');
-
+    
             tbody.find('tr').each((index, element) => {
                 const level = $(element).find('td').eq(0).text(); // Primeiro td: Nível
                 const expToNext = $(element).find('td').eq(1).text(); // Segundo td: XP até o próximo nível
                 const totalExp = $(element).find('td').eq(2).text(); // Terceiro td: XP total
-
+    
                 if (level && expToNext && totalExp) {
                     expData.push({
                         level: parseInt(level),
@@ -112,15 +115,15 @@ client.on('messageCreate', async (message) => {
                     });
                 }
             });
-
+    
             // Validar se expData contém dados suficientes
-            if (skillAtual < 55 || skillDesejada > expData.length + 54) {
+            if (skillAtual < 55 || skillDesejada > 1000) {
                 return message.channel.send('As habilidades devem estar entre 55 e 1000.');
             }
-
+    
             // Calcular a experiência total necessária
             let experienciaTotalNecessaria = 0;
-
+    
             for (let i = skillAtual - 55; i < skillDesejada - 55; i++) {
                 if (expData[i]) { // Verifica se expData[i] está definido
                     experienciaTotalNecessaria += expData[i].expToNext;
@@ -128,20 +131,21 @@ client.on('messageCreate', async (message) => {
                     return message.channel.send('Erro ao acessar os dados de experiência. Verifique a tabela.');
                 }
             }
-
+    
             // Calcular o tempo necessário em horas
             const tempoNecessarioEmHoras = experienciaTotalNecessaria / xpPorHora;
-
+    
             // Converter tempo para horas e minutos
             const horas = Math.floor(tempoNecessarioEmHoras);
             const minutos = Math.floor((tempoNecessarioEmHoras - horas) * 60);
-
+    
             message.channel.send(`Para ir do nível ${skillAtual} ao nível ${skillDesejada} com ${xpPorHora} XP/h, levará ${horas}h ${minutos}m.`);
         } catch (error) {
             console.error(error);
             message.channel.send('Ocorreu um erro ao buscar os dados.');
         }
     }
+    
 
     // Comando para chamar o boss
     if (message.content.startsWith('/callboss')) {
