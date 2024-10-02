@@ -113,11 +113,20 @@ client.on('messageCreate', async (message) => {
                 }
             });
 
+            // Validar se expData contém dados suficientes
+            if (skillAtual < 55 || skillDesejada > expData.length + 54) {
+                return message.channel.send('As habilidades devem estar entre 55 e 1000.');
+            }
+
             // Calcular a experiência total necessária
             let experienciaTotalNecessaria = 0;
 
-            for (let i = skillAtual; i < skillDesejada; i++) {
-                experienciaTotalNecessaria += expData[i].expToNext;
+            for (let i = skillAtual - 55; i < skillDesejada - 55; i++) {
+                if (expData[i]) { // Verifica se expData[i] está definido
+                    experienciaTotalNecessaria += expData[i].expToNext;
+                } else {
+                    return message.channel.send('Erro ao acessar os dados de experiência. Verifique a tabela.');
+                }
             }
 
             // Calcular o tempo necessário em horas
