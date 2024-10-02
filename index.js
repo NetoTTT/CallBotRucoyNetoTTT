@@ -54,14 +54,20 @@ async function getExperienceData() {
 
     const expData = await page.evaluate(() => {
         const data = [];
-        const rows = document.querySelectorAll('table tbody tr');
+        const rows = document.querySelectorAll('tbody tr'); // Usando tbody tr como no HTML fornecido
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length > 0) {
-                const level = parseInt(cells[0].innerText);
-                const expToNext = parseInt(cells[1].innerText);
-                const totalExp = parseInt(cells[2].innerText);
-                data.push({ level, expToNext, totalExp });
+                const level = parseInt(cells[0]?.innerText); // Usa encadeamento opcional
+                const expToNext = parseInt(cells[1]?.innerText);
+                const totalExp = parseInt(cells[2]?.innerText);
+                
+                // Verifica se as células têm valores válidos
+                if (!isNaN(level) && !isNaN(expToNext) && !isNaN(totalExp)) {
+                    data.push({ level, expToNext, totalExp });
+                } else {
+                    console.error('Valores inválidos encontrados:', { level, expToNext, totalExp });
+                }
             }
         });
         return data;
