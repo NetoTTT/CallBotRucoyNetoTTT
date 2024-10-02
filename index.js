@@ -54,19 +54,17 @@ async function getExperienceData() {
 
     const expData = await page.evaluate(() => {
         const data = [];
-        const rows = document.querySelectorAll('tbody tr'); // Usando tbody tr como no HTML fornecido
+        const rows = document.querySelectorAll('tbody tr');
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length > 0) {
-                const level = parseInt(cells[0]?.innerText); // Usa encadeamento opcional
+                const level = parseInt(cells[0]?.innerText);
                 const expToNext = parseInt(cells[1]?.innerText);
                 const totalExp = parseInt(cells[2]?.innerText);
                 
                 // Verifica se as células têm valores válidos
                 if (!isNaN(level) && !isNaN(expToNext) && !isNaN(totalExp)) {
                     data.push({ level, expToNext, totalExp });
-                } else {
-                    console.error('Valores inválidos encontrados:', { level, expToNext, totalExp });
                 }
             }
         });
@@ -119,8 +117,8 @@ client.on('messageCreate', async (message) => {
         const xpPorHora = parseInt(args[3]); // Terceiro argumento: XP por hora
     
         // Verificar se as skills estão dentro do intervalo permitido
-        if (skillAtual < 55 || skillDesejada > 1000 || skillAtual >= skillDesejada) {
-            return message.channel.send('As habilidades devem estar entre 55 e 1000 e a habilidade atual deve ser menor que a desejada.');
+        if (skillAtual < 55 || skillDesejada > 1000) {
+            return message.channel.send('As habilidades devem estar entre 55 e 1000.');
         }
     
         try {
@@ -130,6 +128,7 @@ client.on('messageCreate', async (message) => {
             // Calcular a experiência total necessária
             let experienciaTotalNecessaria = 0;
     
+            // Ajuste do índice, já que o primeiro nível no expData é 55
             for (let i = skillAtual - 55; i < skillDesejada - 55; i++) {
                 if (expData[i]) { // Verifica se expData[i] está definido
                     experienciaTotalNecessaria += expData[i].expToNext;
@@ -144,7 +143,7 @@ client.on('messageCreate', async (message) => {
     
             // Converter tempo para horas e minutos
             const horas = Math.floor(tempoNecessarioEmHoras);
-            const minutos = Math.floor((tempoNecessarioEmHoras - horas) * 60);
+            const minutos = Math.round((tempoNecessarioEmHoras - horas) * 60);
     
             message.channel.send(`Para ir do nível ${skillAtual} ao nível ${skillDesejada} com ${xpPorHora} XP/h, levará ${horas}h ${minutos}m.`);
         } catch (error) {
