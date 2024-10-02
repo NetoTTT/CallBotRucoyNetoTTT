@@ -46,7 +46,9 @@ async function createChannelIfNotExists(guild, channelName) {
 }
 
 async function getExperienceData() {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
     const page = await browser.newPage();
     await page.goto('https://www.rucoystats.com/tables/skills', { waitUntil: 'networkidle2' });
 
@@ -68,6 +70,7 @@ async function getExperienceData() {
     await browser.close();
     return expData;
 }
+
 
 // Cria o canal callbossid com permissões para administradores
 async function createCallBossIdChannel(guild) {
