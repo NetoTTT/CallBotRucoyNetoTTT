@@ -92,12 +92,15 @@ client.on('messageCreate', async (message) => {
             const response = await axios.get(url);
             const data = response.data;
     
+            // Log do HTML da página
+            console.log(data);
+    
             // Usar cheerio para carregar o HTML
             const $ = cheerio.load(data);
     
-            // Selecionar o tbody da tabela
+            // Selecionar todas as tabelas no corpo do HTML
             const expData = [];
-            const tbody = $('table.table-hover tbody'); // Seleciona o tbody da tabela com a classe 'table-hover'
+            const tbody = $('table tbody'); // Seleciona qualquer tbody dentro de uma tabela
     
             // Verifica se a tabela foi encontrada
             if (tbody.length === 0) {
@@ -154,6 +157,7 @@ client.on('messageCreate', async (message) => {
             message.channel.send('Ocorreu um erro ao buscar os dados.');
         }
     }
+    
     
     
     
