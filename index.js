@@ -59,8 +59,8 @@ async function getExperienceData() {
             const cells = row.querySelectorAll('td');
             if (cells.length > 0) {
                 const level = parseInt(cells[0]?.innerText);
-                const expToNext = parseInt(cells[1]?.innerText);
-                const totalExp = parseInt(cells[2]?.innerText);
+                const expToNext = parseInt(cells[1]?.innerText.replace(/,/g, ''));
+                const totalExp = parseInt(cells[2]?.innerText.replace(/,/g, ''));
 
                 // Verifica se as células têm valores válidos
                 if (!isNaN(level) && !isNaN(expToNext) && !isNaN(totalExp)) {
@@ -115,20 +115,19 @@ client.on('messageCreate', async (message) => {
         const skillAtual = parseInt(args[1]); // Primeiro argumento: skill atual
         const skillDesejada = parseInt(args[2]); // Segundo argumento: skill desejada
         const xpPorHora = parseInt(args[3]); // Terceiro argumento: XP por hora
-
+    
         // Verificar se as skills estão dentro do intervalo permitido
         if (skillAtual < 55 || skillDesejada > 1000) {
             return message.channel.send('As habilidades devem estar entre 55 e 1000.');
         }
-
+    
         try {
             // Obter dados de experiência
             const expData = await getExperienceData();
-
+    
             // Calcular a experiência total necessária
             let experienciaTotalNecessaria = 0;
-
-            // Ajuste do índice, já que o primeiro nível no expData é 55
+    
             for (let i = skillAtual - 55; i < skillDesejada - 55; i++) {
                 if (expData[i]) { // Verifica se expData[i] está definido
                     experienciaTotalNecessaria += expData[i].totalExp;
@@ -143,12 +142,12 @@ client.on('messageCreate', async (message) => {
             
             // Calcular o tempo necessário em horas
             const tempoNecessarioEmHoras = experienciaTotalNecessaria / xpPorHora;
-
+    
             // Converter tempo para horas e minutos
             const dias = Math.floor(tempoNecessarioEmHoras / 24);
             const horasRestantes = Math.floor(tempoNecessarioEmHoras % 24);
             const minutos = Math.round((tempoNecessarioEmHoras - Math.floor(tempoNecessarioEmHoras)) * 60);
-
+    
             // Verificar se o tempo total inclui dias e formatar a mensagem de forma apropriada
             let resultado;
             if (dias > 0) {
@@ -162,7 +161,6 @@ client.on('messageCreate', async (message) => {
             message.channel.send('Ocorreu um erro ao buscar os dados.');
         }
     }
-
 
 
 
