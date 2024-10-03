@@ -61,7 +61,7 @@ async function getExperienceData() {
                 const level = parseInt(cells[0]?.innerText);
                 const expToNext = parseInt(cells[1]?.innerText);
                 const totalExp = parseInt(cells[2]?.innerText);
-                
+
                 // Verifica se as células têm valores válidos
                 if (!isNaN(level) && !isNaN(expToNext) && !isNaN(totalExp)) {
                     data.push({ level, expToNext, totalExp });
@@ -115,46 +115,54 @@ client.on('messageCreate', async (message) => {
         const skillAtual = parseInt(args[1]); // Primeiro argumento: skill atual
         const skillDesejada = parseInt(args[2]); // Segundo argumento: skill desejada
         const xpPorHora = parseInt(args[3]); // Terceiro argumento: XP por hora
-    
+
         // Verificar se as skills estão dentro do intervalo permitido
         if (skillAtual < 55 || skillDesejada > 1000) {
             return message.channel.send('As habilidades devem estar entre 55 e 1000.');
         }
-    
+
         try {
             // Obter dados de experiência
             const expData = await getExperienceData();
-    
+
             // Calcular a experiência total necessária
             let experienciaTotalNecessaria = 0;
-    
+
             // Ajuste do índice, já que o primeiro nível no expData é 55
             for (let i = skillAtual - 55; i < skillDesejada - 55; i++) {
                 if (expData[i]) { // Verifica se expData[i] está definido
-                    experienciaTotalNecessaria += expData[i].expToNext;
+                    experienciaTotalNecessaria += expData[i].totalExp;
                 } else {
                     console.log(`Índice fora do alcance: ${i}`);
                     return message.channel.send('Erro ao acessar os dados de experiência. Verifique a tabela.');
                 }
             }
-    
+
             // Calcular o tempo necessário em horas
             const tempoNecessarioEmHoras = experienciaTotalNecessaria / xpPorHora;
-    
+
             // Converter tempo para horas e minutos
-            const horas = Math.floor(tempoNecessarioEmHoras);
-            const minutos = Math.round((tempoNecessarioEmHoras - horas) * 60);
-    
-            message.channel.send(`Para ir do nível ${skillAtual} ao nível ${skillDesejada} com ${xpPorHora} XP/h, levará ${horas}h ${minutos}m.`);
+            const dias = Math.floor(tempoNecessarioEmHoras / 24);
+            const horasRestantes = Math.floor(tempoNecessarioEmHoras % 24);
+            const minutos = Math.round((tempoNecessarioEmHoras - Math.floor(tempoNecessarioEmHoras)) * 60);
+
+            // Verificar se o tempo total inclui dias e formatar a mensagem de forma apropriada
+            let resultado;
+            if (dias > 0) {
+                resultado = `Para ir do nível ${skillAtual} ao nível ${skillDesejada} com ${xpPorHora} XP/h, levará ${dias}d ${horasRestantes}h ${minutos}m.`;
+            } else {
+                resultado = `Para ir do nível ${skillAtual} ao nível ${skillDesejada} com ${xpPorHora} XP/h, levará ${horasRestantes}h ${minutos}m.`;
+            }
+            message.channel.send(resultado);
         } catch (error) {
             console.error(error);
             message.channel.send('Ocorreu um erro ao buscar os dados.');
         }
     }
-    
-    
-    
-    
+
+
+
+
 
     // Comando para chamar o boss
     if (message.content.startsWith('/callboss')) {
