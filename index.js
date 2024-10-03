@@ -112,6 +112,18 @@ client.on('messageCreate', async (message) => {
 
     if (message.content.startsWith('/exp')) {
         const args = message.content.split(' ');
+
+        if (args.length < 4) {
+            return message.channel.send(
+                'Para usar este comando corretamente, insira a skill atual, a skill desejada e a quantidade de XP por hora.\n' +
+                'Exemplo de uso: `/exp 200 300 3600`\n' +
+                'Nota: 3600 XP/h é o ganho ao treinar com 1 inimigo. Se estiver treinando com 4 inimigos (skillando), o ganho pode ser de até 14400 XP/h.\n\n' +
+                'To use this command correctly, provide the current skill, the desired skill, and the XP per hour.\n' +
+                'Example usage: `/exp 200 300 3600`\n' +
+                'Note: 3600 XP/h is the gain when training with 1 enemy. If training with 4 enemies (skilling), the gain can be up to 14400 XP/h.'
+            );
+        }
+        
         const skillAtual = parseInt(args[1]); // Primeiro argumento: skill atual
         const skillDesejada = parseInt(args[2]); // Segundo argumento: skill desejada
         const xpPorHora = parseInt(args[3]); // Terceiro argumento: XP por hora
@@ -151,10 +163,13 @@ client.on('messageCreate', async (message) => {
             // Verificar se o tempo total inclui dias e formatar a mensagem de forma apropriada
             let resultado;
             if (dias > 0) {
-                resultado = `Para ir do nível ${skillAtual} ao nível ${skillDesejada} com ${xpPorHora} XP/h, levará ${dias}d ${horasRestantes}h ${minutos}m.`;
+                resultado = `Para ir do Skill ${skillAtual} ao Skill ${skillDesejada} com ${xpPorHora} XP/h, levará ${dias}d ${horasRestantes}h ${minutos}m.\n` +
+                            `To go from Skill ${skillAtual} to Skill ${skillDesejada} with ${xpPorHora} XP/h, it will take ${dias}d ${horasRestantes}h ${minutos}m.`;
             } else {
-                resultado = `Para ir do nível ${skillAtual} ao nível ${skillDesejada} com ${xpPorHora} XP/h, levará ${horasRestantes}h ${minutos}m.`;
+                resultado = `Para ir do Skill ${skillAtual} ao Skill ${skillDesejada} com ${xpPorHora} XP/h, levará ${horasRestantes}h ${minutos}m.\n` +
+                            `To go from Skill ${skillAtual} to Skill ${skillDesejada} with ${xpPorHora} XP/h, it will take ${horasRestantes}h ${minutos}m.`;
             }
+            
             message.channel.send(resultado);
         } catch (error) {
             console.error(error);
@@ -386,6 +401,7 @@ client.on('messageCreate', async (message) => {
         - \`/restart\`: Reinicia o bot.
         - \`/clearuser\`: Remove mensagens de um usuário.
         - \`/ann\`: anuncio.
+        - \`/exp\`: Calcula o tempo necessário para subir de um nível de skill para outro, com base na quantidade de XP por hora.
 
         **Bosses e Abreviações**:
         - VK: Vampire King
@@ -438,7 +454,9 @@ client.on('messageCreate', async (message) => {
         - \`/kick [user_id]\`: Kicks a user.
         - \`/ping\`: Checks latency.
         - \`/restart\`: Restarts the bot.
-        - \`/clearuser\`: Removes messages from a specific user.
+        - \`/clearuser\`: Removes messages from a specific user. 
+        - \`/exp\`: Calculates the time needed to climb from one skill level to another, based on the amount of XP per hour.
+
 
         **Bosses and Abbreviations**:
         - VK: Vampire King
