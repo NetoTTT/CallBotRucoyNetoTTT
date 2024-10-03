@@ -132,12 +132,15 @@ client.on('messageCreate', async (message) => {
             for (let i = skillAtual - 55; i < skillDesejada - 55; i++) {
                 if (expData[i]) { // Verifica se expData[i] está definido
                     experienciaTotalNecessaria += expData[i].totalExp;
+            
+                    // Imprime o valor acumulado de experienciaTotalNecessaria no console
+                    console.log(`Nível ${i + 55}: Exp total acumulada = ${experienciaTotalNecessaria}`);
                 } else {
                     console.log(`Índice fora do alcance: ${i}`);
                     return message.channel.send('Erro ao acessar os dados de experiência. Verifique a tabela.');
                 }
             }
-
+            
             // Calcular o tempo necessário em horas
             const tempoNecessarioEmHoras = experienciaTotalNecessaria / xpPorHora;
 
