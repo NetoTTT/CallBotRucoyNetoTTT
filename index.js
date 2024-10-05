@@ -228,7 +228,7 @@ client.on('messageCreate', async (message) => {
         const userCalls = ranking.find(user => user.name === message.author.username).count;
     
         // Monta a mensagem de anúncio do boss com o rank individual
-        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss\n **Server:** ${server} **Boss:** ${boss} \n\n**Enviado por:** ${message.author.username} da Guild **${message.guild.name}** \n\n**Rank Atual:** #${userRanking} com **${userCalls}** anúncios de boss\n\n**ID do(a) ${message.author.username}:** ${message.author.id} \n **ID do Servidor(Guild):** ${message.guild.id}`;
+        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n**Call Boss / Chamada de Boss**\n **Server/Servidor:** ${server} **Boss:** ${boss} \n\n**Enviado por / Sent by:** ${message.author.username} da Guild / from Guild **${message.guild.name}** \n\n**Rank Atual / Current Rank:** #${userRanking} com / with **${userCalls}** anúncios de boss / boss announcements\n\n**ID do(a) ${message.author.username}:** ${message.author.id} \n**ID do Servidor (Guild) / Server (Guild) ID:** ${message.guild.id}`;
     
         // Envia a mensagem para todos os servidores com o canal CALLBOSS_CHANNEL_NAME
         client.guilds.cache.forEach(guild => {
