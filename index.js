@@ -254,9 +254,9 @@ client.on('messageCreate', async (message) => {
         const ranking = await getBossCallRanking();
     
         if (ranking.length > 0) {
-            let rankingMessage = 'Ranking dos anunciantes de Boss:\n';
+            let rankingMessage = 'Boss announcer ranking:\n';
             ranking.forEach((user, index) => {
-                rankingMessage += `${index + 1}. ${user.name}: ${user.count} anúncios\n`;
+                rankingMessage += `${index + 1}. ${user.name}: ${user.count} Calls\n`;
             });
     
             // Envia o ranking para o canal onde o comando foi chamado
