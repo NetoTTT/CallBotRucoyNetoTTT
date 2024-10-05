@@ -18,6 +18,7 @@
         "discord-api-types": "^0.37.101",
         "discord.js": "^14.16.3",
         "express": "^4.21.0",
+        "mongodb": "^6.9.0",
         "puppeteer": "^23.4.1"
     }
 }
