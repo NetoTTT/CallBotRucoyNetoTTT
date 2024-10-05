@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
 require('./server');
+const { MongoClient } = require('mongodb');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
@@ -10,12 +11,38 @@ const CALLBOSS_CHANNEL_NAME = 'callbossnetottt';
 const CALLBOSS_ID_CHANNEL_NAME = 'callbossid'; // Novo canal
 const AUTHORIZED_USER_ID = '929052615273250896'; // ID do usuário autorizado
 const MY_SERVER_ID = '1180256244066418769'; // Coloque aqui o ID do seu servidor
+const uri = 'mongodb+srv://foque222:Q12L1lMhwovUNyc9@callbossnetottt.hdkwm.mongodb.net/?retryWrites=true&w=majority&appName=callbossnetottt'; // Substitua pelo URI do MongoDB Atlas
+const clientDB = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+let db;
+
+clientDB.connect().then(() => {
+    db = client.db('bossRankingDB'); // Nome do banco de dados
+});
 
 client.once('ready', () => {
     console.log('Bot do Discord está online!');
     client.guilds.cache.forEach(guild => createChannelsIfNotExists(guild));
-    client.user.setActivity('Guild:Otakus', { type: 'LISTENING' });
+    client.user.setActivity('NetoTTT', { type: 'LISTENING' });
 });
+
+async function addBossCall(username) {
+    const collection = db.collection('callboss_ranking');
+    
+    // Incrementa o contador de anúncios para o usuário
+    await collection.updateOne(
+        { name: username },
+        { $inc: { count: 1 } },
+        { upsert: true } // Se o usuário não existir, ele será inserido
+    );
+}
+
+async function getBossCallRanking() {
+    const collection = db.collection('callboss_ranking');
+    
+    // Busca os usuários ordenados por quantidade de anúncios
+    const ranking = await collection.find().sort({ count: -1 }).toArray();
+    return ranking;
+}
 
 // Função para criar os canais se não existirem
 async function createChannelsIfNotExists(guild) {
@@ -185,13 +212,25 @@ client.on('messageCreate', async (message) => {
         const args = message.content.split(' ').slice(1);
         const server = args.find(arg => arg.startsWith('server'))?.split('.')[1];
         const boss = args.find(arg => arg.startsWith('boss'))?.split('.')[1];
-
+    
         if (!server || !boss) {
             return;
         }
-
-        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss\n **Server:** ${server} **Boss:** ${boss} \n\n**Enviado por:** ${message.author.username} da Guild **${message.guild.name}** \n\n **ID do(a) ${message.author.username}:** ${message.author.id} \n **ID do Servidor(Guild):** ${message.guild.id} `;
-
+    
+        // Incrementa o contador de boss calls para o usuário
+        await addBossCall(message.author.username);
+    
+        // Obtém o ranking atualizado do usuário
+        const ranking = await getBossCallRanking();
+    
+        // Encontrar a posição do usuário no ranking
+        const userRanking = ranking.findIndex(user => user.name === message.author.username) + 1;
+        const userCalls = ranking.find(user => user.name === message.author.username).count;
+    
+        // Monta a mensagem de anúncio do boss com o rank individual
+        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nCall Boss\n **Server:** ${server} **Boss:** ${boss} \n\n**Enviado por:** ${message.author.username} da Guild **${message.guild.name}** \n\n**Rank Atual:** #${userRanking} com **${userCalls}** anúncios de boss\n\n**ID do(a) ${message.author.username}:** ${message.author.id} \n **ID do Servidor(Guild):** ${message.guild.id}`;
+    
+        // Envia a mensagem para todos os servidores com o canal CALLBOSS_CHANNEL_NAME
         client.guilds.cache.forEach(guild => {
             const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
             if (callBossChannel) {
@@ -200,7 +239,43 @@ client.on('messageCreate', async (message) => {
                 createChannelsIfNotExists(guild);
             }
         });
+    
+        // Opcional: também enviar a mensagem do rank no canal original onde o comando foi usado
+        message.channel.send(`**${message.author.username}**, seu rank foi atualizado! Você está em **#${userRanking}** com **${userCalls}** calls de boss.`);
     }
+    
+    if (message.content.startsWith('/tops')) {
+        // Verifica se o usuário tem permissão para usar o comando (somente você pode usar)
+        if (message.author.id !== AUTHORIZED_USER_ID) {
+            return message.channel.send('Você não tem permissão para usar este comando.');
+        }
+    
+        // Busca o ranking de usuários
+        const ranking = await getBossCallRanking();
+    
+        if (ranking.length > 0) {
+            let rankingMessage = 'Ranking dos anunciantes de Boss:\n';
+            ranking.forEach((user, index) => {
+                rankingMessage += `${index + 1}. ${user.name}: ${user.count} anúncios\n`;
+            });
+    
+            // Envia o ranking para o canal onde o comando foi chamado
+            message.channel.send(rankingMessage);
+    
+            // Envia o ranking para todos os servidores com o canal CALLBOSS_CHANNEL_NAME
+            client.guilds.cache.forEach(guild => {
+                const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
+                if (callBossChannel) {
+                    callBossChannel.send(rankingMessage).catch(console.error);
+                } else {
+                    createChannelsIfNotExists(guild);
+                }
+            });
+        } else {
+            message.channel.send('Nenhum anúncio de boss foi registrado ainda.');
+        }
+    }
+    
 
     //Apaga mensagem de um ID
     if (message.content.startsWith('/clearuser')) {
