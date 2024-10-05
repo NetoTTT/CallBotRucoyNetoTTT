@@ -16,7 +16,7 @@ const clientDB = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopolog
 let db;
 
 clientDB.connect().then(() => {
-    db = client.db('bossRankingDB'); // Nome do banco de dados
+    db = clientDB.db('bossRankingDB'); // Nome do banco de dados
 });
 
 client.once('ready', () => {
