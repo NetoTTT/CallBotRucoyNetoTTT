@@ -589,7 +589,7 @@ client.on('messageCreate', async (message) => {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
-        const announcement = message.content.slice(10); // Remove "/announce " do início
+        const announcement = message.content.slice(5); // Remove "/announce " do início
         client.guilds.cache.forEach(guild => {
             const announcementChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
             if (announcementChannel) {
