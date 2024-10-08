@@ -304,6 +304,38 @@ client.on('messageCreate', async (message) => {
         }
     }
 
+    if (message.content.startsWith('/sendmsg')) {
+        // Verificar se o usuário é autorizado
+        if (message.author.id !== AUTHORIZED_USER_ID) {
+            return message.reply("Você não tem permissão para usar este comando.");
+        }
+    
+        const args = message.content.split(' ').slice(1);
+        const targetUserId = args[0]; // O primeiro argumento é o ID do usuário de destino
+        const msgContent = args.slice(1).join(' '); // O restante é a mensagem a ser enviada
+    
+        // Verifica se o ID do usuário e a mensagem foram fornecidos
+        if (!targetUserId || !msgContent) {
+            return message.reply("Por favor, forneça o ID do usuário e a mensagem. Exemplo: `/sendmsg 123456789012345678 Olá, como vai?`");
+        }
+    
+        // Tenta encontrar o usuário com o ID fornecido
+        client.users.fetch(targetUserId).then(user => {
+            // Envia a mensagem para o usuário encontrado
+            user.send(msgContent)
+                .then(() => {
+                    message.reply(`Mensagem enviada para o usuário ${user.tag}.`);
+                })
+                .catch(err => {
+                    console.error("Erro ao enviar mensagem: ", err);
+                    message.reply("Houve um erro ao enviar a mensagem.");
+                });
+        }).catch(err => {
+            console.error("Erro ao buscar usuário: ", err);
+            message.reply("Não consegui encontrar o usuário com o ID fornecido.");
+        });
+    }
+    
 
 
     // Comando para listar os servidores onde o bot está presente
