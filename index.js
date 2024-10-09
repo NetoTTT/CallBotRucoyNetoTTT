@@ -3,8 +3,15 @@ require('./server');
 const { MongoClient } = require('mongodb');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const admin = require('firebase-admin');
+const serviceAccount = require('./callbossdiscordbot-firebase-adminsdk-g4z86-bf1e6615b1.json'); // Adicione o caminho para suas credenciais do Firebase
+
 const puppeteer = require('puppeteer');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+const dbfire = admin.firestore();
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CALLBOSS_CHANNEL_NAME = 'callbossnetottt';
@@ -101,6 +108,24 @@ async function getExperienceData() {
     await browser.close();
     return expData;
 }
+
+// Listen for additions in the bossCalls collection
+dbfire.collection('bossCalls').onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+            const data = change.doc.data();
+            const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n**Call Boss**\n**Server:** ${data.server} **Boss:** ${data.boss} \n\n**Sent by:** ${data.user} via WhatsApp \n**User ID:** ${data.userId} \n**Guild ID:** ${data.guildId}`;
+
+            // Send the message to all channels with CALLBOSS_CHANNEL_NAME
+            client.guilds.cache.forEach(guild => {
+                const callBossChannel = guild.channels.cache.find(channel => channel.name === 'callbossnetottt');
+                if (callBossChannel) {
+                    callBossChannel.send(response).catch(console.error);
+                }
+            });
+        }
+    });
+});
 
 // Cria o canal callbossid com permissões para administradores
 async function createCallBossIdChannel(guild) {
@@ -207,40 +232,47 @@ client.on('messageCreate', async (message) => {
 
 
 
-    // Comando para chamar o boss
     if (message.content.startsWith('/callboss')) {
         const args = message.content.split(' ').slice(1);
         const server = args.find(arg => arg.startsWith('server'))?.split('.')[1];
         const boss = args.find(arg => arg.startsWith('boss'))?.split('.')[1];
-    
+
         if (!server || !boss) {
-            return;
+            return message.reply("Por favor, forneça um servidor e um boss.");
         }
-    
+
         // Incrementa o contador de boss calls para o usuário
         await addBossCall(message.author.username);
-    
+
         // Obtém o ranking atualizado do usuário
         const ranking = await getBossCallRanking();
-    
+
         // Encontrar a posição do usuário no ranking
         const userRanking = ranking.findIndex(user => user.name === message.author.username) + 1;
         const userCalls = ranking.find(user => user.name === message.author.username).count;
-    
+
         // Monta a mensagem de anúncio do boss com o rank individual
-        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n**Call Boss**\n**Server** ${server} **Boss:** ${boss} \n\n**Sent by:** ${message.author.username} from Guild **${message.guild.name}** \n\n**Current Rank:** #${userRanking} with **${userCalls}** boss announcements\n\n**ID do(a) ${message.author.username}:** ${message.author.id} \n**ID Server (Guild) ID:** ${message.guild.id}`;
-    
-        // Envia a mensagem para todos os servidores com o canal CALLBOSS_CHANNEL_NAME
+        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n**Call Boss**\n**Server:** ${server} **Boss:** ${boss} \n\n**Sent by:** ${message.author.username} from Guild **${message.guild.name}** \n\n**Current Rank:** #${userRanking} with **${userCalls}** boss announcements\n\n**ID do(a) ${message.author.username}:** ${message.author.id} \n**ID Server (Guild) ID:** ${message.guild.id}`;
+
+        // Envia a mensagem para o Firestore
+        await dbfire.collection('bossCalls').add({
+            server,
+            boss,
+            user: message.author.username,
+            userId: message.author.id,
+            guildId: message.guild.id,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Envia a mensagem para todos os canais CALLBOSS_CHANNEL_NAME
         client.guilds.cache.forEach(guild => {
-            const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
+            const callBossChannel = guild.channels.cache.find(channel => channel.name === 'callbossnetottt'); // Substitua pelo nome do seu canal
             if (callBossChannel) {
                 callBossChannel.send(response).catch(console.error);
-            } else {
-                createChannelsIfNotExists(guild);
             }
         });
-    
-        // Opcional: também enviar a mensagem do rank no canal original onde o comando foi usado
+
+        // Envia uma confirmação ao usuário no canal original
         message.channel.send(`**${message.author.username}**, seu rank foi atualizado! Você está em **#${userRanking}** com **${userCalls}** calls de boss.`);
     }
     

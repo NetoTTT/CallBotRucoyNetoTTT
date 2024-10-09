@@ -1,15 +1,19 @@
 const express = require('express');
 const app = express();
 
-app.get('/', (req, res) => {
-    res.send('Bem-vindo ao bot do Discord!');
+app.use(express.json());
+
+// Rota para receber comandos e enviar para o bot
+app.post('/discord-callboss', (req, res) => {
+    const { server, boss, user } = req.body;
+    console.log(`Server: ${server}, Boss: ${boss}, User: ${user}`);
+    // Aqui você pode fazer uma chamada ao bot do Discord usando o cliente do bot
+    res.send('Comando enviado para o Discord!');
 });
 
-app.get('/ping', (req, res) => {
-    res.send('Bot está acordado!');
-});
+// Porta que será usada pelo Railway (Railway atribui uma porta automaticamente)
+const port = process.env.PORT || 3000;
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(port, () => {
+    console.log(`API rodando na porta ${port}`);
 });
