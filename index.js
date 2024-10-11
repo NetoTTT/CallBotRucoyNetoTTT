@@ -4,7 +4,7 @@ const { MongoClient } = require('mongodb');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const admin = require('firebase-admin');
-const serviceAccount = require('./callbossdiscordbot-firebase-adminsdk-g4z86-bf1e6615b1.json'); // Adicione o caminho para suas credenciais do Firebase
+const serviceAccount = require('./callbossdiscordbot-firebase-adminsdk-g4z86-bf1e6615b1.json'); // caminho para suas credenciais do Firebase
 
 const puppeteer = require('puppeteer');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
@@ -34,7 +34,7 @@ client.once('ready', () => {
 
 async function addBossCall(username) {
     const collection = db.collection('callboss_ranking');
-    
+
     // Incrementa o contador de anúncios para o usuário
     await collection.updateOne(
         { name: username },
@@ -45,7 +45,7 @@ async function addBossCall(username) {
 
 async function getBossCallRanking() {
     const collection = db.collection('callboss_ranking');
-    
+
     // Busca os usuários ordenados por quantidade de anúncios
     const ranking = await collection.find().sort({ count: -1 }).toArray();
     return ranking;
@@ -175,27 +175,27 @@ client.on('messageCreate', async (message) => {
                 'Note: 3600 XP/h is the gain when training with 1 enemy. If training with 4 enemies (skilling), the gain can be up to 14400 XP/h.'
             );
         }
-        
+
         const skillAtual = parseInt(args[1]); // Primeiro argumento: skill atual
         const skillDesejada = parseInt(args[2]); // Segundo argumento: skill desejada
         const xpPorHora = parseInt(args[3]); // Terceiro argumento: XP por hora
-    
+
         // Verificar se as skills estão dentro do intervalo permitido
         if (skillAtual < 55 || skillDesejada > 1000) {
             return message.channel.send('As habilidades devem estar entre 55 e 1000.');
         }
-    
+
         try {
             // Obter dados de experiência
             const expData = await getExperienceData();
-    
+
             // Calcular a experiência total necessária
             let experienciaTotalNecessaria = 0;
-    
+
             for (let i = skillAtual - 55; i < skillDesejada - 55; i++) {
                 if (expData[i]) { // Verifica se expData[i] está definido
                     experienciaTotalNecessaria += expData[i].expToNext;
-            
+
                     // Imprime o valor acumulado de experienciaTotalNecessaria no console
                     //console.log(`Nível ${i + 55}: Exp total acumulada = ${experienciaTotalNecessaria}`);
                 } else {
@@ -203,25 +203,25 @@ client.on('messageCreate', async (message) => {
                     return message.channel.send('Erro ao acessar os dados de experiência. Verifique a tabela.');
                 }
             }
-            
+
             // Calcular o tempo necessário em horas
             const tempoNecessarioEmHoras = experienciaTotalNecessaria / xpPorHora;
-    
+
             // Converter tempo para horas e minutos
             const dias = Math.floor(tempoNecessarioEmHoras / 24);
             const horasRestantes = Math.floor(tempoNecessarioEmHoras % 24);
             const minutos = Math.round((tempoNecessarioEmHoras - Math.floor(tempoNecessarioEmHoras)) * 60);
-    
+
             // Verificar se o tempo total inclui dias e formatar a mensagem de forma apropriada
             let resultado;
             if (dias > 0) {
                 resultado = `Para ir do Skill ${skillAtual} ao Skill ${skillDesejada} com ${xpPorHora} XP/h, levará ${dias}d ${horasRestantes}h ${minutos}m.\n` +
-                            `To go from Skill ${skillAtual} to Skill ${skillDesejada} with ${xpPorHora} XP/h, it will take ${dias}d ${horasRestantes}h ${minutos}m.`;
+                    `To go from Skill ${skillAtual} to Skill ${skillDesejada} with ${xpPorHora} XP/h, it will take ${dias}d ${horasRestantes}h ${minutos}m.`;
             } else {
                 resultado = `Para ir do Skill ${skillAtual} ao Skill ${skillDesejada} com ${xpPorHora} XP/h, levará ${horasRestantes}h ${minutos}m.\n` +
-                            `To go from Skill ${skillAtual} to Skill ${skillDesejada} with ${xpPorHora} XP/h, it will take ${horasRestantes}h ${minutos}m.`;
+                    `To go from Skill ${skillAtual} to Skill ${skillDesejada} with ${xpPorHora} XP/h, it will take ${horasRestantes}h ${minutos}m.`;
             }
-            
+
             message.channel.send(resultado);
         } catch (error) {
             console.error(error);
@@ -229,45 +229,78 @@ client.on('messageCreate', async (message) => {
         }
     }
 
+    const cooldowns = new Map();
+
     if (message.content.startsWith('/callboss')) {
         const args = message.content.split(' ').slice(1);
-        const server = args.find(arg => arg.startsWith('server'))?.split('.')[1];
-        const boss = args.find(arg => arg.startsWith('boss'))?.split('.')[1];
-    
-        if (!server || !boss) {
-            return message.reply("Por favor, forneça um servidor e um boss.");
+        let server = args.find(arg => arg.startsWith('server'))?.split('.')[1];
+        let boss = args.find(arg => arg.startsWith('boss'))?.split('.')[1];
+        let P = args.find(arg => arg.startsWith('p'))?.split('.')[1];
+
+        // Verifica se o server e boss estão no formato correto
+        const validServers = ['na1', 'na2', 'na3', 'na4', 'na5', 'na6', 'sa1', 'sa2', 'sa3', 'sa4', 'sa5', 'sa6', 'sa7', 'sa8', 'eu1', 'eu2', 'eu3', 'eu4', 'eu5', 'eu6', 'a1', 'a2', 'a3', 'a4'];
+        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'go', 'zb', 'ce', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br'];
+        const validP = ["1","2"];
+
+        // Transformar para minúsculo para validação
+        server = server?.toLowerCase();
+        boss = boss?.toLowerCase();
+
+        if (!validServers.includes(server) || !validBosses.includes(boss) || !validP.includes(P)) {
+            const validServersList = validServers.map(s => s.toUpperCase()).join(', ');
+            const validBossesList = validBosses.map(b => b.toUpperCase()).join(', ');
+        
+            return message.reply(
+                `Servidor ou boss inválido. Por favor, forneça um servidor e boss válidos.\n\n**Servidores válidos:** ${validServersList}\n**Bosses válidos:** ${validBossesList}`
+            );
         }
-    
+        
+
+        // Verificar o cooldown
+        const now = Date.now();
+        const cooldownAmount = 60 * 1000; // 1 minuto em milissegundos
+
+        if (cooldowns.has(message.author.id)) {
+            const expirationTime = cooldowns.get(message.author.id) + cooldownAmount;
+
+            if (now < expirationTime) {
+                const timeLeft = (expirationTime - now) / 1000;
+                return message.reply(`Você deve esperar mais ${timeLeft.toFixed(1)} segundos antes de usar o comando novamente.`);
+            }
+        }
+
+        cooldowns.set(message.author.id, now);
+
         // Incrementa o contador de boss calls para o usuário
         await addBossCall(message.author.username);
-    
+
         // Obtém o ranking atualizado do usuário
         const ranking = await getBossCallRanking();
-    
+
         // Encontrar a posição do usuário no ranking
         const userRanking = ranking.findIndex(user => user.name === message.author.username) + 1;
         const userCalls = ranking.find(user => user.name === message.author.username).count;
-    
+
         // Monta a mensagem de anúncio do boss com o rank individual
-        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n**Call Boss**\n**Server:** ${server} **Boss:** ${boss} \n\n**Sent by:** ${message.author.username} from Guild **${message.guild.name}** \n\n**Current Rank:** #${userRanking} with **${userCalls}** boss announcements\n\n**ID do(a) ${message.author.username}:** ${message.author.id} \n**ID Server (Guild) ID:** ${message.guild.id}`;
-    
+        const response = `-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n**Call Boss**\n**Server:** ${server.toUpperCase()} **Boss:** ${boss.toUpperCase()} **P** ${P}\n\n**Sent by:** ${message.author.username} from Guild **${message.guild.name}** \n\n**Current Rank:** #${userRanking} with **${userCalls}** boss announcements\n\n**ID do(a) ${message.author.username}:** ${message.author.id} \n**ID Server (Guild) ID:** ${message.guild.id}`;
+
         // Envia a chamada de boss para a coleção do usuário (registro individual)
         await dbfire.collection('bossCallsUsers').doc(message.author.id).collection('calls').add({
-            server,
-            boss,
+            server: server.toUpperCase(),
+            boss: boss.toUpperCase(),
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
-    
+
         // Envia a chamada de boss para a coleção global (todas as chamadas)
         await dbfire.collection('bossCallsGlobal').add({
-            server,
-            boss,
+            server: server.toUpperCase(),
+            boss: boss.toUpperCase(),
             user: message.author.username,
             userId: message.author.id,
             guildId: message.guild.id,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
-    
+
         // Envia a mensagem para todos os canais CALLBOSS_CHANNEL_NAME
         client.guilds.cache.forEach(guild => {
             const callBossChannel = guild.channels.cache.find(channel => channel.name === 'callbossnetottt'); // Substitua pelo nome do seu canal
@@ -275,30 +308,31 @@ client.on('messageCreate', async (message) => {
                 callBossChannel.send(response).catch(console.error);
             }
         });
-    
+
         // Envia uma confirmação ao usuário no canal original
         message.channel.send(`**${message.author.username}**, seu rank foi atualizado! Você está em **#${userRanking}** com **${userCalls}** calls de boss.`);
     }
-    
-    
+
+
+
     if (message.content.startsWith('/tops')) {
         // Verifica se o usuário tem permissão para usar o comando (somente você pode usar)
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.channel.send('Você não tem permissão para usar este comando.');
         }
-    
+
         // Busca o ranking de usuários
         const ranking = await getBossCallRanking();
-    
+
         if (ranking.length > 0) {
             let rankingMessage = 'Boss announcer ranking:\n';
             ranking.forEach((user, index) => {
                 rankingMessage += `${index + 1}. ${user.name}: ${user.count} Calls\n`;
             });
-    
+
             // Envia o ranking para o canal onde o comando foi chamado
             message.channel.send(rankingMessage);
-    
+
             // Envia o ranking para todos os servidores com o canal CALLBOSS_CHANNEL_NAME
             client.guilds.cache.forEach(guild => {
                 const callBossChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
@@ -312,7 +346,7 @@ client.on('messageCreate', async (message) => {
             message.channel.send('Nenhum anúncio de boss foi registrado ainda.');
         }
     }
-    
+
 
     //Apaga mensagem de um ID
     if (message.content.startsWith('/clearuser')) {
@@ -346,16 +380,16 @@ client.on('messageCreate', async (message) => {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
-    
+
         const args = message.content.split(' ').slice(1);
         const targetUserId = args[0]; // O primeiro argumento é o ID do usuário de destino
         const msgContent = args.slice(1).join(' '); // O restante é a mensagem a ser enviada
-    
+
         // Verifica se o ID do usuário e a mensagem foram fornecidos
         if (!targetUserId || !msgContent) {
             return message.reply("Por favor, forneça o ID do usuário e a mensagem. Exemplo: `/sendmsg 123456789012345678 Olá, como vai?`");
         }
-    
+
         // Tenta encontrar o usuário com o ID fornecido
         client.users.fetch(targetUserId).then(user => {
             // Envia a mensagem para o usuário encontrado
@@ -372,7 +406,7 @@ client.on('messageCreate', async (message) => {
             message.reply("Não consegui encontrar o usuário com o ID fornecido.");
         });
     }
-    
+
 
 
     // Comando para listar os servidores onde o bot está presente
@@ -505,8 +539,8 @@ client.on('messageCreate', async (message) => {
     if (message.content.startsWith('/callajuda')) {
         const helpMessage = `
         **Regras do Bot:**
-        1. **Comando**: Use \`/callboss server.[servidor] boss.[boss]\`.
-           **Ex**: \`/callboss server.Sa1 boss.VK\`
+        1. **Comando**: Use \`/callboss server.[servidor] boss.[boss] p.[P1 ou P2]\`.
+           **Ex**: \`/callboss server.Sa1 boss.VK p.1\`
         2. **Formato Correto**: Verifique se digitou corretamente.
         3. **Canal**: Envie no canal \`#callbossnetottt\`.
         4. **Respeito**: Trate todos com respeito.
@@ -515,7 +549,7 @@ client.on('messageCreate', async (message) => {
         7. **Limite**: Não envie muitos comandos.
 
         **Comandos Disponíveis**:
-        - \`/callboss server.[servidor] boss.[boss]\`: Chama um boss.
+        - \`/callboss server.[servidor] boss.[boss] p.[P1 ou P2]\`: Chama um boss.
         - \`/banuser [user_id]\`: Bane um usuário.
         - \`/unbanuser [user_id]\`: Desbane um usuário.
         - \`/banguild\`: Bane a guilda.
@@ -560,8 +594,8 @@ client.on('messageCreate', async (message) => {
     if (message.content.startsWith('/callhelp')) {
         const helpMessage = `
         **Bot Rules:**
-        1. **Command**: Use \`/callboss server.[server] boss.[boss]\`.
-           **Ex**: \`/callboss server.Sa1 boss.VK\`
+        1. **Command**: Use \`/callboss server.[server] boss.[boss] p.[P1 or P2]\`.
+           **Ex**: \`/callboss server.Sa1 boss.VK p.1\`
         2. **Correct Format**: Ensure you typed it correctly.
         3. **Channel**: Send in \`#callbossnetottt\`.
         4. **Respect**: Treat everyone with respect.
@@ -570,7 +604,7 @@ client.on('messageCreate', async (message) => {
         7. **Limit**: Don't spam commands.
 
         **Available Commands**:
-        - \`/callboss server.[server] boss.[boss]\`: Calls a boss.
+        - \`/callboss server.[server] boss.[boss] p.[P1 or P2]\`: Calls a boss.
         - \`/banuser [user_id]\`: Bans a user.
         - \`/unbanuser [user_id]\`: Unbans a user.
         - \`/banguild\`: Bans the guild.
@@ -658,12 +692,18 @@ client.on('messageCreate', async (message) => {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
-        const announcement = message.content.slice(5); // Remove "/announce " do início
+        const announcement = message.content.slice(5); // Remove "/ann " do início
         client.guilds.cache.forEach(guild => {
             const announcementChannel = guild.channels.cache.find(channel => channel.name === CALLBOSS_CHANNEL_NAME);
             if (announcementChannel) {
                 announcementChannel.send(announcement).catch(console.error);
             }
+        });
+
+        // Envia a chamada de boss para a coleção global (todas as chamadas)
+        await dbfire.collection('UpdatesAndAnn').add({
+            announcement,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
 
         message.channel.send("O anúncio foi enviado para todos os servidores.");
