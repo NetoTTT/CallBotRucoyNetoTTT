@@ -239,7 +239,7 @@ client.on('messageCreate', async (message) => {
 
         // Verifica se o server e boss estão no formato correto
         const validServers = ['na1', 'na2', 'na3', 'na4', 'na5', 'na6', 'sa1', 'sa2', 'sa3', 'sa4', 'sa5', 'sa6', 'sa7', 'sa8', 'eu1', 'eu2', 'eu3', 'eu4', 'eu5', 'eu6', 'a1', 'a2', 'a3', 'a4'];
-        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'go', 'zb', 'ce', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br'];
+        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'go', 'zb', 'ce', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br','vk'];
         const validP = ["1","2"];
 
         // Transformar para minúsculo para validação
