@@ -44,22 +44,24 @@ async function addBossCall(username) {
 }
 
 const originalDocRef = dbfire.collection('formulaBoss').doc('sequenciaBoss');
-const BR = dbfire.collection('formulaBoss').doc('BR');
-const CB = dbfire.collection('formulaBoss').doc('CB');
-const CR = dbfire.collection('formulaBoss').doc('CR');
-const DQ = dbfire.collection('formulaBoss').doc('DQ');
-const ES = dbfire.collection('formulaBoss').doc('ES');
-const GK = dbfire.collection('formulaBoss').doc('GK');
-const GL = dbfire.collection('formulaBoss').doc('GL');
-const GO = dbfire.collection('formulaBoss').doc('GO');
-const HW = dbfire.collection('formulaBoss').doc('HW');
-const KC = dbfire.collection('formulaBoss').doc('KC');
-const LC = dbfire.collection('formulaBoss').doc('LC');
-const SC = dbfire.collection('formulaBoss').doc('SC');
-const SL = dbfire.collection('formulaBoss').doc('SL');
-const VK = dbfire.collection('formulaBoss').doc('VK');
-const WP = dbfire.collection('formulaBoss').doc('WP');
-const ZB = dbfire.collection('formulaBoss').doc('ZB');
+const docs = {
+    BR: dbfire.collection('formulaBoss').doc('BR'),
+    CB: dbfire.collection('formulaBoss').doc('CB'),
+    CR: dbfire.collection('formulaBoss').doc('CR'),
+    DQ: dbfire.collection('formulaBoss').doc('DQ'),
+    ES: dbfire.collection('formulaBoss').doc('ES'),
+    GK: dbfire.collection('formulaBoss').doc('GK'),
+    GL: dbfire.collection('formulaBoss').doc('GL'),
+    GO: dbfire.collection('formulaBoss').doc('GO'),
+    HW: dbfire.collection('formulaBoss').doc('HW'),
+    KC: dbfire.collection('formulaBoss').doc('KC'),
+    LC: dbfire.collection('formulaBoss').doc('LC'),
+    SC: dbfire.collection('formulaBoss').doc('SC'),
+    SL: dbfire.collection('formulaBoss').doc('SL'),
+    VK: dbfire.collection('formulaBoss').doc('VK'),
+    WP: dbfire.collection('formulaBoss').doc('WP'),
+    ZB: dbfire.collection('formulaBoss').doc('ZB')
+};
 
 async function copiarDocumento() {
     try {
@@ -69,25 +71,17 @@ async function copiarDocumento() {
         if (doc.exists) {
             const dados = doc.data();
             
-            // Adicionar um novo documento com os dados copiados
-            await BR.set(dados);
-            await CB.set(dados);
-            await CR.set(dados);
-            await DQ.set(dados);
-            await ES.set(dados);
-            await GK.set(dados);
-            await GL.set(dados);
-            await GO.set(dados);
-            await HW.set(dados);
-            await KC.set(dados);
-            await LC.set(dados);
-            await SC.set(dados);
-            await SL.set(dados);
-            await VK.set(dados);
-            await WP.set(dados);
-            await ZB.set(dados);
+            // Iterar sobre cada documento (exceto o original)
+            for (const [docName, docRef] of Object.entries(docs)) {
 
-            console.log('Documento copiado com sucesso!');
+                // Criar a coleção "seq" dentro do documento
+                const seqCollectionRef = docRef.collection('seq');
+                
+                // Criar um novo documento dentro da coleção "seq" com o nome "docNameSeq"
+                await seqCollectionRef.doc(`${docName}Seq`)
+            }
+
+            console.log('Documento e subcoleções copiadas com sucesso!');
         } else {
             console.log('O documento original não existe.');
         }
@@ -95,6 +89,7 @@ async function copiarDocumento() {
         console.error('Erro ao copiar documento: ', error);
     }
 }
+
 
 async function getBossCallRanking() {
     const collection = dbfire.collection('callboss_ranking');
