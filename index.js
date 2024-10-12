@@ -43,6 +43,59 @@ async function addBossCall(username) {
     );
 }
 
+const originalDocRef = db.collection('formulaBoss').doc('sequenciaBoss');
+const BR = db.collection('formulaBoss').doc('BR');
+const CB = db.collection('formulaBoss').doc('CB');
+const CR = db.collection('formulaBoss').doc('CR');
+const DQ = db.collection('formulaBoss').doc('DQ');
+const ES = db.collection('formulaBoss').doc('ES');
+const GK = db.collection('formulaBoss').doc('GK');
+const GL = db.collection('formulaBoss').doc('GL');
+const GO = db.collection('formulaBoss').doc('GO');
+const HW = db.collection('formulaBoss').doc('HW');
+const KC = db.collection('formulaBoss').doc('KC');
+const LC = db.collection('formulaBoss').doc('LC');
+const SC = db.collection('formulaBoss').doc('SC');
+const SL = db.collection('formulaBoss').doc('SL');
+const VK = db.collection('formulaBoss').doc('VK');
+const WP = db.collection('formulaBoss').doc('WP');
+const ZB = db.collection('formulaBoss').doc('ZB');
+
+async function copiarDocumento() {
+    try {
+        // Obter os dados do documento original
+        const doc = await originalDocRef.get();
+        
+        if (doc.exists) {
+            const dados = doc.data();
+            
+            // Adicionar um novo documento com os dados copiados
+            await BR.set(dados);
+            await CB.set(dados);
+            await CR.set(dados);
+            await DQ.set(dados);
+            await ES.set(dados);
+            await GK.set(dados);
+            await GL.set(dados);
+            await GO.set(dados);
+            await HW.set(dados);
+            await KC.set(dados);
+            await LC.set(dados);
+            await SC.set(dados);
+            await SL.set(dados);
+            await VK.set(dados);
+            await WP.set(dados);
+            await ZB.set(dados);
+
+            console.log('Documento copiado com sucesso!');
+        } else {
+            console.log('O documento original não existe.');
+        }
+    } catch (error) {
+        console.error('Erro ao copiar documento: ', error);
+    }
+}
+
 async function getBossCallRanking() {
     const collection = db.collection('callboss_ranking');
 
@@ -321,6 +374,7 @@ client.on('messageCreate', async (message) => {
 
         if (P === "3") {
             P3(message, server, seqDoc, seqData);
+            return
         }
 
 
@@ -415,6 +469,13 @@ client.on('messageCreate', async (message) => {
         }
     }
 
+    if(message.content.startsWith('/copiar')){
+        if (message.author.id !== AUTHORIZED_USER_ID) {
+            return message.reply("Você não tem permissão para usar este comando.");
+        }
+
+        copiarDocumento();
+    }
 
     //Apaga mensagem de um ID
     if (message.content.startsWith('/clearuser')) {
