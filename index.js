@@ -282,7 +282,11 @@ async function updateBossRecords(message, server, boss, seqData, serverPositionB
 }
 
 
-async function P3(message, server, seqDoc, seqData) {
+async function P3(message, server, seqDoc, boss) {
+    // Obtém os dados do documento do boss
+    const bossDoc = await dbfire.collection('formulaBoss').doc(boss.toUpperCase()).get();
+    const seqData = bossDoc.data().servers || []; // Pega a sequência de servidores
+
     // Salvar os cinco primeiros servidores antes da alteração
     const originalFirstFiveServers = seqData.slice(0, 5);
 
@@ -446,7 +450,7 @@ client.on('messageCreate', async (message) => {
 
         if (P === "3") {
             // Aqui passamos seqData corretamente para a função P3
-            await P3(message, server, seqDoc, seqData);
+            await P3(message, server, seqDoc, seqData,boss);
         
             // Receber o resultado de processCallBoss (seqData, serverPositionBeforeUpdate e originalFirstFiveServers)
             const result = await processCallBoss(message, server, boss);
