@@ -289,8 +289,8 @@ async function P3(message, server, seqDoc, boss) {
     }
 
     // Obtém os dados do documento do boss
-    const bossDoc = await dbfire.collection('formulaBoss').doc(boss.toUpperCase()).get();
-    let seqData = bossDoc.data().servers || []; // Usando let para permitir reatribuição
+    const bossDoc = await seqDoc.get(); // Obtém os dados do documento de seqDoc
+    let seqData = bossDoc.data().servers || []; // Usa let para permitir reatribuição
 
     // Salvar os cinco primeiros servidores antes da alteração
     const originalFirstFiveServers = seqData.slice(0, 5);
@@ -305,7 +305,7 @@ async function P3(message, server, seqDoc, boss) {
     seqData.push(server);
 
     // Atualizar o documento com a nova sequência
-    await seqDoc.update({
+    await seqDoc.update({ // Use seqDoc aqui, que é uma referência
         servers: seqData
     });
 
@@ -453,16 +453,19 @@ client.on('messageCreate', async (message) => {
         let seqData = seqGet.exists ? seqGet.data().servers || [] : [];
 
         if (P === "3") {
-            // Aqui passamos seqData corretamente para a função P3
-            seqData = await P3(message, server, seqData, boss); // Assegure-se de que P3 retorne seqData atualizado
-        
+            // Obtém a referência do documento do boss
+            const seqDoc = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
+            
+            // Passa a referência do documento para a função P3
+            await P3(message, server, seqDoc, boss);
+            
             // Receber o resultado de processCallBoss (seqData, serverPositionBeforeUpdate e originalFirstFiveServers)
             const result = await processCallBoss(message, server, boss);
-        
+            
             if (result) {
                 // Desestruturar seqData, serverPositionBeforeUpdate e originalFirstFiveServers do resultado
                 const { seqData, serverPositionBeforeUpdate, originalFirstFiveServers } = result;
-        
+                
                 // Atualizar registros e dar feedback ao usuário
                 await updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate, originalFirstFiveServers);
                 
@@ -471,6 +474,7 @@ client.on('messageCreate', async (message) => {
             }
             return;
         }
+        
         
         // Verificar o cooldown
         const now = Date.now();
