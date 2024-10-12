@@ -290,7 +290,7 @@ async function P3(message, server, seqDoc, boss) {
 
     // Obtém os dados do documento do boss
     const bossDoc = await dbfire.collection('formulaBoss').doc(boss.toUpperCase()).get();
-    let seqData = bossDoc.data().servers || []; // Mudei para 'let' aqui
+    let seqData = bossDoc.data().servers || []; // Usando let para permitir reatribuição
 
     // Salvar os cinco primeiros servidores antes da alteração
     const originalFirstFiveServers = seqData.slice(0, 5);
@@ -299,7 +299,7 @@ async function P3(message, server, seqDoc, boss) {
     const serverPositionBeforeUpdate = seqData.indexOf(server) + 1; // Posição original (1-indexed)
 
     // Remove o servidor se já existir na sequência
-    seqData = seqData.filter(s => s !== server); // Agora isso não causará erro
+    seqData = seqData.filter(s => s !== server);
 
     // Adiciona o servidor ao final da sequência
     seqData.push(server);
@@ -316,10 +316,8 @@ async function P3(message, server, seqDoc, boss) {
     // Mensagem sobre a posição original do servidor
     let positionMessage;
     if (serverPositionBeforeUpdate <= 5) {
-        // O servidor estava entre os cinco primeiros
         positionMessage = `O boss nasceu no servidor **${server.toUpperCase()}**, que estava na posição ${serverPositionBeforeUpdate} na lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
     } else {
-        // O servidor estava fora dos cinco primeiros
         positionMessage = `O servidor **${server.toUpperCase()}** estava na posição ${serverPositionBeforeUpdate}, fora dos 5 primeiros. Lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
     }
     message.channel.send(positionMessage);
@@ -341,9 +339,10 @@ async function P3(message, server, seqDoc, boss) {
         targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt')?.send(afterUpdateMessage).catch(console.error);
     }
 
-    // P3: Não enviar para as outras guildas
-    return;
+    // Retornar a nova seqData
+    return seqData;
 }
+
 
 
 client.on('messageCreate', async (message) => {
@@ -455,7 +454,7 @@ client.on('messageCreate', async (message) => {
 
         if (P === "3") {
             // Aqui passamos seqData corretamente para a função P3
-            await P3(message, server, seqData,boss);
+            seqData = await P3(message, server, seqData, boss); // Assegure-se de que P3 retorne seqData atualizado
         
             // Receber o resultado de processCallBoss (seqData, serverPositionBeforeUpdate e originalFirstFiveServers)
             const result = await processCallBoss(message, server, boss);
@@ -465,7 +464,7 @@ client.on('messageCreate', async (message) => {
                 const { seqData, serverPositionBeforeUpdate, originalFirstFiveServers } = result;
         
                 // Atualizar registros e dar feedback ao usuário
-                await updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate,originalFirstFiveServers);
+                await updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate, originalFirstFiveServers);
                 
                 // Você pode fazer algo com originalFirstFiveServers aqui, se necessário
                 console.log(`Os 5 primeiros servidores antes da atualização: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}`);
