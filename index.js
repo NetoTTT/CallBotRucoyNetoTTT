@@ -159,6 +159,59 @@ async function createCallBossIdChannel(guild) {
     }
 }
 
+async function P3(message, server, seqDoc, seqData) {
+    // Remove o servidor se já existir na sequência
+    seqData = seqData.filter(s => s !== server);
+
+    // Adiciona o servidor ao final da sequência
+    seqData.push(server);
+
+    // Atualizar o documento com a nova sequência
+    await seqDoc.update({
+        servers: seqData
+    });
+
+    // Verificar se o server está entre os 5 primeiros
+    const firstFiveServers = seqData.slice(0, 5);
+    const serverPosition = firstFiveServers.indexOf(server);
+
+    if (serverPosition !== -1) {
+        const positionMessage = `O boss nasceu no servidor **${server.toUpperCase()}**, que estava na posição ${serverPosition + 1} na lista dos 5 primeiros: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
+        message.channel.send(positionMessage);
+
+        // Salvar o registro dos 5 primeiros servidores e o servidor que nasceu
+        await dbfire.collection('bossSpawns').add({
+            servers: firstFiveServers,
+            spawnPosition: serverPosition + 1,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    } else {
+        const fullServerPosition = seqData.indexOf(server) + 1;
+        const positionMessage = `O servidor **${server.toUpperCase()}** estava na posição ${fullServerPosition}, fora dos 5 primeiros. Lista dos 5 primeiros: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
+        message.channel.send(positionMessage);
+
+        await dbfire.collection('bossSpawns').add({
+            servers: firstFiveServers,
+            serverPosition: fullServerPosition,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    }
+
+    // Enviar mensagem apenas para a guilda específica
+    const targetGuildId = '1030587920974888960'; // Substitua com o ID da sua guild
+    const targetGuild = client.guilds.cache.get(targetGuildId);
+
+    if (targetGuild) {
+        const callBossChannel = targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt'); // Substitua pelo nome do seu canal
+        if (callBossChannel) {
+            callBossChannel.send(firstFiveServers.map(s => s.toUpperCase()).join(', ')).catch(console.error);
+        }
+    }
+
+    // P3: Não enviar para as outras guildas
+    return;
+}
+
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
@@ -239,8 +292,8 @@ client.on('messageCreate', async (message) => {
 
         // Verifica se o server e boss estão no formato correto
         const validServers = ['na1', 'na2', 'na3', 'na4', 'na5', 'na6', 'sa1', 'sa2', 'sa3', 'sa4', 'sa5', 'sa6', 'sa7', 'sa8', 'eu1', 'eu2', 'eu3', 'eu4', 'eu5', 'eu6', 'a1', 'a2', 'a3', 'a4'];
-        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'go', 'zb', 'cb', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br','vk'];
-        const validP = ["1","2"];
+        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'go', 'zb', 'cb', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br', 'vk'];
+        const validP = ["1", "2", "3"];
 
         // Transformar para minúsculo para validação
         server = server?.toLowerCase();
@@ -249,12 +302,27 @@ client.on('messageCreate', async (message) => {
         if (!validServers.includes(server) || !validBosses.includes(boss) || !validP.includes(P)) {
             const validServersList = validServers.map(s => s.toUpperCase()).join(', ');
             const validBossesList = validBosses.map(b => b.toUpperCase()).join(', ');
-        
+
             return message.reply(
                 `Servidor ou boss inválido. Por favor, forneça um servidor e boss válidos.\n\n**Servidores válidos:** ${validServersList}\n**Bosses válidos:** ${validBossesList}`
             );
         }
-        
+
+        // Carregar a lista de servidores do Firestore
+        const formulaRef = dbfire.collection('formulaBoss').doc('serverList');
+        const doc = await formulaRef.get();
+
+        // Carregar a sequência de servers
+        const seqDoc = dbfire.collection('formulaBoss').doc('sequenciaBoss');
+        const seqGet = await seqDoc.get();
+
+        // Verificar se a sequência existe e transformar em array
+        let seqData = seqGet.exists ? seqGet.data().servers || [] : [];
+
+        if (P === "3") {
+            P3(message, server, seqDoc, seqData);
+        }
+
 
         // Verificar o cooldown
         const now = Date.now();
@@ -412,7 +480,7 @@ client.on('messageCreate', async (message) => {
     // Comando para listar os servidores onde o bot está presente
     if (message.content.startsWith('/listguilds')) {
         if (message.author.id !== AUTHORIZED_USER_ID) {
-            return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
+            return message.reply("Você não tem perdo. Converse com NetoTTT Discord: netottt");
         }
 
         try {

@@ -1,0 +1,12 @@
+create database escola;
+use escola;
+create table alunos(
+	id int not null auto increment,
+	nome varchar(45),
+	idade int,
+	primary key(id)
+);
+insert into alunos (null,"neto",19);
+
+1,2,3,4,5 -> [2] 
+1,2,3,4,5 -> [3] 
