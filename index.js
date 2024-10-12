@@ -437,15 +437,19 @@ client.on('messageCreate', async (message) => {
         let seqData = seqGet.exists ? seqGet.data().servers || [] : [];
 
         if (P === "3") {
-            P3(message, server, seqDoc, seqData);
-            const seqData = await processCallBoss(message, server, boss);
-
+            // Aqui passamos seqData corretamente para a função P3
+            await P3(message, server, seqDoc, seqData);
+        
+            // Apenas atribua a seqData o resultado de processCallBoss, sem usar 'const'
+            seqData = await processCallBoss(message, server, boss);
+        
             if (seqData) {
                 // Atualizar registros e dar feedback ao usuário
                 await updateBossRecords(message, server, boss, seqData);
             }
-            return
+            return;
         }
+        
 
 
         // Verificar o cooldown
