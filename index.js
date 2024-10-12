@@ -290,7 +290,7 @@ async function P3(message, server, seqDoc, boss) {
 
     // Obtém os dados do documento do boss
     const bossDoc = await dbfire.collection('formulaBoss').doc(boss.toUpperCase()).get();
-    const seqData = bossDoc.data().servers || []; // Pega a sequência de servidores
+    let seqData = bossDoc.data().servers || []; // Mudei para 'let' aqui
 
     // Salvar os cinco primeiros servidores antes da alteração
     const originalFirstFiveServers = seqData.slice(0, 5);
@@ -299,7 +299,7 @@ async function P3(message, server, seqDoc, boss) {
     const serverPositionBeforeUpdate = seqData.indexOf(server) + 1; // Posição original (1-indexed)
 
     // Remove o servidor se já existir na sequência
-    seqData = seqData.filter(s => s !== server);
+    seqData = seqData.filter(s => s !== server); // Agora isso não causará erro
 
     // Adiciona o servidor ao final da sequência
     seqData.push(server);
