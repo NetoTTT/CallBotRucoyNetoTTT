@@ -302,31 +302,25 @@ async function P3(message, server, seqDoc, seqData) {
 
     // Pegar os cinco primeiros servidores após a mudança
     const firstFiveServers = seqData.slice(0, 5);
-    const serverPosition = firstFiveServers.indexOf(server); // Verificar a posição do servidor nos 5 primeiros
+    const newServerPosition = firstFiveServers.indexOf(server) + 1; // Posição do servidor nos 5 primeiros após a mudança
 
     // Mensagem sobre a posição original do servidor
+    let positionMessage;
     if (serverPositionBeforeUpdate <= 5) {
         // O servidor estava entre os cinco primeiros
-        const positionMessage = `O boss nasceu no servidor **${server.toUpperCase()}**, que estava na posição ${serverPositionBeforeUpdate} na lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
-        message.channel.send(positionMessage);
-
-        // Salvar o registro dos 5 primeiros servidores e o servidor que nasceu
-        await dbfire.collection('bossSpawns').add({
-            servers: firstFiveServers,
-            spawnPosition: serverPosition + 1,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        positionMessage = `O boss nasceu no servidor **${server.toUpperCase()}**, que estava na posição ${serverPositionBeforeUpdate} na lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
     } else {
         // O servidor estava fora dos cinco primeiros
-        const positionMessage = `O servidor **${server.toUpperCase()}** estava na posição ${serverPositionBeforeUpdate}, fora dos 5 primeiros. Lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
-        message.channel.send(positionMessage);
-
-        await dbfire.collection('bossSpawns').add({
-            servers: firstFiveServers,
-            serverPosition: serverPositionBeforeUpdate,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        positionMessage = `O servidor **${server.toUpperCase()}** estava na posição ${serverPositionBeforeUpdate}, fora dos 5 primeiros. Lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
     }
+    message.channel.send(positionMessage);
+
+    // Salvar o registro dos 5 primeiros servidores e o servidor que nasceu
+    await dbfire.collection('bossSpawns').add({
+        servers: firstFiveServers,
+        spawnPosition: newServerPosition,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
     // Enviar mensagem apenas para a guilda específica
     const targetGuildId = '1030587920974888960'; // Substitua com o ID da sua guild
@@ -334,7 +328,8 @@ async function P3(message, server, seqDoc, seqData) {
 
     if (targetGuild) {
         // Mostrar os cinco primeiros servidores após a mudança
-        callBossChannel.send(`Após a atualização, os 5 primeiros servidores são: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}`).catch(console.error);
+        const afterUpdateMessage = `Após a atualização, os 5 primeiros servidores são: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}`;
+        targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt')?.send(afterUpdateMessage).catch(console.error);
     }
 
     // P3: Não enviar para as outras guildas
