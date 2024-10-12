@@ -221,6 +221,9 @@ async function processCallBoss(message, server, boss) {
 
         let seqData = bossDoc.data().servers || [];
 
+        // Verificar a posição do servidor antes de removê-lo/adicioná-lo
+        const serverPositionBeforeUpdate = seqData.indexOf(server);
+
         // Remove o servidor se já estiver na sequência
         seqData = seqData.filter(s => s !== server);
 
@@ -232,29 +235,28 @@ async function processCallBoss(message, server, boss) {
             servers: seqData
         });
 
-        return seqData; // Retorna a sequência atualizada para ser usada no próximo passo
+        // Retornar a sequência atualizada e a posição original do servidor
+        return { seqData, serverPositionBeforeUpdate }; // Retorna a sequência e a posição original
     } catch (error) {
         console.error('Erro ao processar callboss:', error);
         message.reply('Ocorreu um erro ao processar o boss. Tente novamente mais tarde.');
     }
 }
 
-
-
-async function updateBossRecords(message, server, boss, seqData) {
+async function updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate) {
     try {
         const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
 
         // Pegar os primeiros 5 servidores da lista
         const firstFiveServers = seqData.slice(0, 5);
-        const serverPosition = firstFiveServers.indexOf(server);
-        const fullServerPosition = seqData.indexOf(server) + 1;
+        const serverPosition = firstFiveServers.indexOf(server) !== -1 ? firstFiveServers.indexOf(server) + 1 : null;
+        const fullServerPosition = serverPositionBeforeUpdate + 1; // Posição original antes de mover o servidor
 
         // Atualizar a coleção "seq" dentro do documento do boss
         await bossDocRef.collection('seq').add({
             servers: firstFiveServers,
             server: server.toUpperCase(),
-            spawnPosition: serverPosition !== -1 ? serverPosition + 1 : fullServerPosition,
+            spawnPosition: serverPosition || fullServerPosition,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
 
@@ -275,6 +277,7 @@ async function updateBossRecords(message, server, boss, seqData) {
         message.reply('Erro ao salvar os dados do boss no Firestore.');
     }
 }
+
 
 async function P3(message, server, seqDoc, seqData) {
     // Remove o servidor se já existir na sequência
@@ -439,18 +442,18 @@ client.on('messageCreate', async (message) => {
         if (P === "3") {
             // Aqui passamos seqData corretamente para a função P3
             await P3(message, server, seqDoc, seqData);
-        
-            // Apenas atribua a seqData o resultado de processCallBoss, sem usar 'const'
-            seqData = await processCallBoss(message, server, boss);
-        
-            if (seqData) {
+
+            // Receber o resultado de processCallBoss (seqData e serverPositionBeforeUpdate)
+            const result = await processCallBoss(message, server, boss);
+
+            if (result) {
+                const { seqData, serverPositionBeforeUpdate } = result;
+
                 // Atualizar registros e dar feedback ao usuário
-                await updateBossRecords(message, server, boss, seqData);
+                await updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate);
             }
             return;
         }
-        
-
 
         // Verificar o cooldown
         const now = Date.now();
