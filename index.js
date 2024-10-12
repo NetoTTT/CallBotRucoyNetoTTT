@@ -302,11 +302,12 @@ async function P3(message, server, seqDoc, seqData) {
 
     // Pegar os cinco primeiros servidores após a mudança
     const firstFiveServers = seqData.slice(0, 5);
-    const serverPosition = firstFiveServers.indexOf(server);
+    const serverPosition = firstFiveServers.indexOf(server); // Verificar a posição do servidor nos 5 primeiros
 
     // Mensagem sobre a posição original do servidor
-    if (serverPosition !== -1) {
-        const positionMessage = `O boss nasceu no servidor **${server.toUpperCase()}**, que estava na posição ${serverPosition + 1} na lista dos 5 primeiros: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
+    if (serverPositionBeforeUpdate <= 5) {
+        // O servidor estava entre os cinco primeiros
+        const positionMessage = `O boss nasceu no servidor **${server.toUpperCase()}**, que estava na posição ${serverPositionBeforeUpdate} na lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
         message.channel.send(positionMessage);
 
         // Salvar o registro dos 5 primeiros servidores e o servidor que nasceu
@@ -316,13 +317,13 @@ async function P3(message, server, seqDoc, seqData) {
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
     } else {
-        const fullServerPosition = serverPositionBeforeUpdate; // Posição original
-        const positionMessage = `O servidor **${server.toUpperCase()}** estava na posição ${fullServerPosition}, fora dos 5 primeiros. Lista dos 5 primeiros: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
+        // O servidor estava fora dos cinco primeiros
+        const positionMessage = `O servidor **${server.toUpperCase()}** estava na posição ${serverPositionBeforeUpdate}, fora dos 5 primeiros. Lista dos 5 primeiros: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
         message.channel.send(positionMessage);
 
         await dbfire.collection('bossSpawns').add({
             servers: firstFiveServers,
-            serverPosition: fullServerPosition,
+            serverPosition: serverPositionBeforeUpdate,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
     }
@@ -332,16 +333,14 @@ async function P3(message, server, seqDoc, seqData) {
     const targetGuild = client.guilds.cache.get(targetGuildId);
 
     if (targetGuild) {
-        const callBossChannel = targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt'); // Substitua pelo nome do seu canal
-        if (callBossChannel) {
-            // Mostrar os cinco primeiros servidores após a mudança
-            callBossChannel.send(`Após a atualização, os 5 primeiros servidores são: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}`).catch(console.error);
-        }
+        // Mostrar os cinco primeiros servidores após a mudança
+        callBossChannel.send(`Após a atualização, os 5 primeiros servidores são: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}`).catch(console.error);
     }
 
     // P3: Não enviar para as outras guildas
     return;
 }
+
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
