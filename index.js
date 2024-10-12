@@ -92,7 +92,7 @@ async function copiarDocumento() {
 
 
 async function getBossCallRanking() {
-    const collection = dbfire.collection('callboss_ranking');
+    const collection = db.collection('callboss_ranking');
 
     // Busca os usuários ordenados por quantidade de anúncios
     const ranking = await collection.find().sort({ count: -1 }).toArray();
