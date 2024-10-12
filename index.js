@@ -224,6 +224,9 @@ async function processCallBoss(message, server, boss) {
         // Verificar a posição do servidor antes de removê-lo/adicioná-lo
         const serverPositionBeforeUpdate = seqData.indexOf(server);
 
+        // Salvar os cinco primeiros servidores antes da alteração
+        const originalFirstFiveServers = seqData.slice(0, 5);
+
         // Remove o servidor se já estiver na sequência
         seqData = seqData.filter(s => s !== server);
 
@@ -236,14 +239,14 @@ async function processCallBoss(message, server, boss) {
         });
 
         // Retornar a sequência atualizada e a posição original do servidor
-        return { seqData, serverPositionBeforeUpdate }; // Retorna a sequência e a posição original
+        return { seqData, serverPositionBeforeUpdate, originalFirstFiveServers }; // Retorna a sequência, posição original e os primeiros cinco
     } catch (error) {
         console.error('Erro ao processar callboss:', error);
         message.reply('Ocorreu um erro ao processar o boss. Tente novamente mais tarde.');
     }
 }
 
-async function updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate) {
+async function updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate, originalFirstFiveServers) {
     try {
         const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
 
@@ -254,7 +257,7 @@ async function updateBossRecords(message, server, boss, seqData, serverPositionB
 
         // Atualizar a coleção "seq" dentro do documento do boss
         await bossDocRef.collection('seq').add({
-            servers: firstFiveServers,
+            servers: originalFirstFiveServers, // Salvar os cinco primeiros servidores originais
             server: server.toUpperCase(),
             spawnPosition: serverPosition || fullServerPosition,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -280,6 +283,12 @@ async function updateBossRecords(message, server, boss, seqData, serverPositionB
 
 
 async function P3(message, server, seqDoc, seqData) {
+    // Salvar os cinco primeiros servidores antes da alteração
+    const originalFirstFiveServers = seqData.slice(0, 5);
+
+    // Verificar a posição do servidor antes de removê-lo
+    const serverPositionBeforeUpdate = seqData.indexOf(server) + 1; // Posição original (1-indexed)
+
     // Remove o servidor se já existir na sequência
     seqData = seqData.filter(s => s !== server);
 
@@ -291,10 +300,11 @@ async function P3(message, server, seqDoc, seqData) {
         servers: seqData
     });
 
-    // Verificar se o server está entre os 5 primeiros
+    // Pegar os cinco primeiros servidores após a mudança
     const firstFiveServers = seqData.slice(0, 5);
     const serverPosition = firstFiveServers.indexOf(server);
 
+    // Mensagem sobre a posição original do servidor
     if (serverPosition !== -1) {
         const positionMessage = `O boss nasceu no servidor **${server.toUpperCase()}**, que estava na posição ${serverPosition + 1} na lista dos 5 primeiros: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
         message.channel.send(positionMessage);
@@ -306,7 +316,7 @@ async function P3(message, server, seqDoc, seqData) {
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
     } else {
-        const fullServerPosition = seqData.indexOf(server) + 1;
+        const fullServerPosition = serverPositionBeforeUpdate; // Posição original
         const positionMessage = `O servidor **${server.toUpperCase()}** estava na posição ${fullServerPosition}, fora dos 5 primeiros. Lista dos 5 primeiros: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}.`;
         message.channel.send(positionMessage);
 
@@ -324,7 +334,8 @@ async function P3(message, server, seqDoc, seqData) {
     if (targetGuild) {
         const callBossChannel = targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt'); // Substitua pelo nome do seu canal
         if (callBossChannel) {
-            callBossChannel.send(firstFiveServers.map(s => s.toUpperCase()).join(', ')).catch(console.error);
+            // Mostrar os cinco primeiros servidores após a mudança
+            callBossChannel.send(`Após a atualização, os 5 primeiros servidores são: ${firstFiveServers.map(s => s.toUpperCase()).join(', ')}`).catch(console.error);
         }
     }
 
@@ -442,19 +453,23 @@ client.on('messageCreate', async (message) => {
         if (P === "3") {
             // Aqui passamos seqData corretamente para a função P3
             await P3(message, server, seqDoc, seqData);
-
-            // Receber o resultado de processCallBoss (seqData e serverPositionBeforeUpdate)
+        
+            // Receber o resultado de processCallBoss (seqData, serverPositionBeforeUpdate e originalFirstFiveServers)
             const result = await processCallBoss(message, server, boss);
-
+        
             if (result) {
-                const { seqData, serverPositionBeforeUpdate } = result;
-
+                // Desestruturar seqData, serverPositionBeforeUpdate e originalFirstFiveServers do resultado
+                const { seqData, serverPositionBeforeUpdate, originalFirstFiveServers } = result;
+        
                 // Atualizar registros e dar feedback ao usuário
-                await updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate);
+                await updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate,originalFirstFiveServers);
+                
+                // Você pode fazer algo com originalFirstFiveServers aqui, se necessário
+                console.log(`Os 5 primeiros servidores antes da atualização: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}`);
             }
             return;
         }
-
+        
         // Verificar o cooldown
         const now = Date.now();
         const cooldownAmount = 60 * 1000; // 1 minuto em milissegundos
