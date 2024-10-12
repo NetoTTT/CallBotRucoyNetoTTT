@@ -67,16 +67,16 @@ async function copiarDocumento() {
     try {
         // Obter os dados do documento original
         const doc = await originalDocRef.get();
-        
+
         if (doc.exists) {
             const dados = doc.data();
-            
+
             // Iterar sobre cada documento (exceto o original)
             for (const [docName, docRef] of Object.entries(docs)) {
 
                 // Criar a coleção "seq" dentro do documento
                 const seqCollectionRef = docRef.collection('seq');
-                
+
                 // Criar um novo documento dentro da coleção "seq" com o nome "docNameSeq"
                 await seqCollectionRef.doc(`${docName}Seq`)
             }
@@ -204,6 +204,75 @@ async function createCallBossIdChannel(guild) {
         }
     } else {
         console.log(`Canal ${CALLBOSS_ID_CHANNEL_NAME} já existe em ${guild.name}.`);
+    }
+}
+
+async function processCallBoss(message, server, boss) {
+    try {
+        // Referência ao documento do boss específico
+        const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
+
+        // Buscar o documento do boss
+        const bossDoc = await bossDocRef.get();
+
+        if (!bossDoc.exists) {
+            return message.reply(`O documento do boss **${boss.toUpperCase()}** não foi encontrado no Firestore.`);
+        }
+
+        let seqData = bossDoc.data().servers || [];
+
+        // Remove o servidor se já estiver na sequência
+        seqData = seqData.filter(s => s !== server);
+
+        // Adiciona o servidor no final da sequência
+        seqData.push(server);
+
+        // Atualizar a sequência no documento do boss
+        await bossDocRef.update({
+            servers: seqData
+        });
+
+        return seqData; // Retorna a sequência atualizada para ser usada no próximo passo
+    } catch (error) {
+        console.error('Erro ao processar callboss:', error);
+        message.reply('Ocorreu um erro ao processar o boss. Tente novamente mais tarde.');
+    }
+}
+
+
+
+async function updateBossRecords(message, server, boss, seqData) {
+    try {
+        const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
+
+        // Pegar os primeiros 5 servidores da lista
+        const firstFiveServers = seqData.slice(0, 5);
+        const serverPosition = firstFiveServers.indexOf(server);
+        const fullServerPosition = seqData.indexOf(server) + 1;
+
+        // Atualizar a coleção "seq" dentro do documento do boss
+        await bossDocRef.collection('seq').add({
+            servers: firstFiveServers,
+            server: server.toUpperCase(),
+            spawnPosition: serverPosition !== -1 ? serverPosition + 1 : fullServerPosition,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Notificar apenas a guilda específica
+        const targetGuildId = '1030587920974888960'; // Substitua pelo ID da sua guild
+        const targetGuild = client.guilds.cache.get(targetGuildId);
+
+        if (targetGuild) {
+            const callBossChannel = targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt'); // Substitua pelo nome do seu canal
+            if (callBossChannel) {
+                callBossChannel.send(`Atualização do boss **${boss.toUpperCase()}**. Dados salvos.`).catch(console.error);
+            }
+        }
+
+        console.log(`Dados atualizados para o boss: ${boss}`);
+    } catch (error) {
+        console.error('Erro ao atualizar registros do boss:', error);
+        message.reply('Erro ao salvar os dados do boss no Firestore.');
     }
 }
 
@@ -340,7 +409,7 @@ client.on('messageCreate', async (message) => {
 
         // Verifica se o server e boss estão no formato correto
         const validServers = ['na1', 'na2', 'na3', 'na4', 'na5', 'na6', 'sa1', 'sa2', 'sa3', 'sa4', 'sa5', 'sa6', 'sa7', 'sa8', 'eu1', 'eu2', 'eu3', 'eu4', 'eu5', 'eu6', 'a1', 'a2', 'a3', 'a4'];
-        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'go', 'zb', 'cb', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br', 'vk'];
+        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'gb', 'zb', 'cb', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br', 'vk'];
         const validP = ["1", "2", "3"];
 
         // Transformar para minúsculo para validação
@@ -369,6 +438,12 @@ client.on('messageCreate', async (message) => {
 
         if (P === "3") {
             P3(message, server, seqDoc, seqData);
+            const seqData = await processCallBoss(message, server, boss);
+
+            if (seqData) {
+                // Atualizar registros e dar feedback ao usuário
+                await updateBossRecords(message, server, boss, seqData);
+            }
             return
         }
 
@@ -464,7 +539,7 @@ client.on('messageCreate', async (message) => {
         }
     }
 
-    if(message.content.startsWith('/copiar')){
+    if (message.content.startsWith('/copiar')) {
         if (message.author.id !== AUTHORIZED_USER_ID) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
@@ -689,12 +764,12 @@ client.on('messageCreate', async (message) => {
 
         **Bosses e Abreviações**:
         - VK: Vampire King
-        - GL: Goblin Lord
+        - GB: Goblin Lord
         - KC: Kamon the Cursed
         - SL: Slime Lord
         - DQ: Drow Queen
         - GK: General Krinok
-        - GO: Goliath
+        - GL: Goliath
         - ZB: Zarron Bravehorn
         - CB: Cerberus
         - WP: Wicked Pumpkin
@@ -744,12 +819,12 @@ client.on('messageCreate', async (message) => {
 
         **Bosses and Abbreviations**:
         - VK: Vampire King
-        - GL: Goblin Lord
+        - GB: Goblin Lord
         - KC: Kamon the Cursed
         - SL: Slime Lord
         - DQ: Drow Queen
         - GK: General Krinok
-        - GO: Goliath
+        - GL: Goliath
         - ZB: Zarron Bravehorn
         - CB: Cerberus
         - WP: Wicked Pumpkin
