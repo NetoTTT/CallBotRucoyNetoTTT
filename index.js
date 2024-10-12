@@ -283,6 +283,11 @@ async function updateBossRecords(message, server, boss, seqData, serverPositionB
 
 
 async function P3(message, server, seqDoc, boss) {
+    // Verifica se boss é uma string
+    if (typeof boss !== 'string') {
+        throw new TypeError(`Expected boss to be a string, but got ${typeof boss}`);
+    }
+
     // Obtém os dados do documento do boss
     const bossDoc = await dbfire.collection('formulaBoss').doc(boss.toUpperCase()).get();
     const seqData = bossDoc.data().servers || []; // Pega a sequência de servidores
@@ -450,7 +455,7 @@ client.on('messageCreate', async (message) => {
 
         if (P === "3") {
             // Aqui passamos seqData corretamente para a função P3
-            await P3(message, server, seqDoc, seqData,boss);
+            await P3(message, server, seqData,boss);
         
             // Receber o resultado de processCallBoss (seqData, serverPositionBeforeUpdate e originalFirstFiveServers)
             const result = await processCallBoss(message, server, boss);
