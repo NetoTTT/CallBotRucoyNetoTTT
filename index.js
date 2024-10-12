@@ -43,23 +43,23 @@ async function addBossCall(username) {
     );
 }
 
-const originalDocRef = db.collection('formulaBoss').doc('sequenciaBoss');
-const BR = db.collection('formulaBoss').doc('BR');
-const CB = db.collection('formulaBoss').doc('CB');
-const CR = db.collection('formulaBoss').doc('CR');
-const DQ = db.collection('formulaBoss').doc('DQ');
-const ES = db.collection('formulaBoss').doc('ES');
-const GK = db.collection('formulaBoss').doc('GK');
-const GL = db.collection('formulaBoss').doc('GL');
-const GO = db.collection('formulaBoss').doc('GO');
-const HW = db.collection('formulaBoss').doc('HW');
-const KC = db.collection('formulaBoss').doc('KC');
-const LC = db.collection('formulaBoss').doc('LC');
-const SC = db.collection('formulaBoss').doc('SC');
-const SL = db.collection('formulaBoss').doc('SL');
-const VK = db.collection('formulaBoss').doc('VK');
-const WP = db.collection('formulaBoss').doc('WP');
-const ZB = db.collection('formulaBoss').doc('ZB');
+const originalDocRef = dbfire.collection('formulaBoss').doc('sequenciaBoss');
+const BR = dbfire.collection('formulaBoss').doc('BR');
+const CB = dbfire.collection('formulaBoss').doc('CB');
+const CR = dbfire.collection('formulaBoss').doc('CR');
+const DQ = dbfire.collection('formulaBoss').doc('DQ');
+const ES = dbfire.collection('formulaBoss').doc('ES');
+const GK = dbfire.collection('formulaBoss').doc('GK');
+const GL = dbfire.collection('formulaBoss').doc('GL');
+const GO = dbfire.collection('formulaBoss').doc('GO');
+const HW = dbfire.collection('formulaBoss').doc('HW');
+const KC = dbfire.collection('formulaBoss').doc('KC');
+const LC = dbfire.collection('formulaBoss').doc('LC');
+const SC = dbfire.collection('formulaBoss').doc('SC');
+const SL = dbfire.collection('formulaBoss').doc('SL');
+const VK = dbfire.collection('formulaBoss').doc('VK');
+const WP = dbfire.collection('formulaBoss').doc('WP');
+const ZB = dbfire.collection('formulaBoss').doc('ZB');
 
 async function copiarDocumento() {
     try {
@@ -97,7 +97,7 @@ async function copiarDocumento() {
 }
 
 async function getBossCallRanking() {
-    const collection = db.collection('callboss_ranking');
+    const collection = dbfire.collection('callboss_ranking');
 
     // Busca os usuários ordenados por quantidade de anúncios
     const ranking = await collection.find().sort({ count: -1 }).toArray();
