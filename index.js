@@ -61,14 +61,17 @@ async function copiarDocumento() {
             // Iterar sobre cada documento (exceto o original)
             for (const [docName, docRef] of Object.entries(docs)) {
 
-                // Criar a coleção "seq" dentro do documento
+                // Copia os dados diretamente para o documento (por exemplo, GB, SNOW, SANTA)
+                await docRef.set(dados);  // Copia os dados aqui
+
+                // Criar a coleção "seq" dentro do documento, sem copiar os dados
                 const seqCollectionRef = docRef.collection('seq');
 
-                // Criar um novo documento dentro da coleção "seq" com o nome "docNameSeq"
-                await docs.set(dados);  // Copia os dados aqui
+                // Criar um documento vazio dentro da coleção "seq" para garantir que a coleção seja criada
+                await seqCollectionRef.doc('placeholder').set({ created: true });
             }
 
-            console.log('Documento e subcoleções copiadas com sucesso!');
+            console.log('Documento copiado e subcoleções criadas com sucesso!');
         } else {
             console.log('O documento original não existe.');
         }
