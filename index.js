@@ -16,7 +16,7 @@ const dbfire = admin.firestore();
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CALLBOSS_CHANNEL_NAME = 'callbossnetottt';
 const CALLBOSS_ID_CHANNEL_NAME = 'callbossid'; // Novo canal
-const AUTHORIZED_USER_ID = '929052615273250896'; // ID do usuário autorizado
+const AUTHORIZED_USER_IDS = ['929052615273250896', '520933657540558869', '1272568094304243723']; // IDs dos usuários autorizados
 const MY_SERVER_ID = '1180256244066418769'; // Coloque aqui o ID do seu servidor
 const uri = 'mongodb+srv://foque222:Q12L1lMhwovUNyc9@callbossnetottt.hdkwm.mongodb.net/?retryWrites=true&w=majority&appName=callbossnetottt'; // Substitua pelo URI do MongoDB Atlas
 const clientDB = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -524,8 +524,8 @@ client.on('messageCreate', async (message) => {
 
     if (message.content.startsWith('/tops')) {
         // Verifica se o usuário tem permissão para usar o comando (somente você pode usar)
-        if (message.author.id !== AUTHORIZED_USER_ID) {
-            return message.channel.send('Você não tem permissão para usar este comando.');
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
+            return message.reply("Você não tem permissão para usar este comando.");
         }
 
         // Busca o ranking de usuários
@@ -555,7 +555,7 @@ client.on('messageCreate', async (message) => {
     }
 
     if (message.content.startsWith('/copiar')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
@@ -565,7 +565,7 @@ client.on('messageCreate', async (message) => {
     //Apaga mensagem de um ID
     if (message.content.startsWith('/clearuser')) {
         // Verifica se o autor da mensagem é um usuário autorizado
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
@@ -591,7 +591,7 @@ client.on('messageCreate', async (message) => {
 
     if (message.content.startsWith('/sendmsg')) {
         // Verificar se o usuário é autorizado
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
@@ -625,8 +625,8 @@ client.on('messageCreate', async (message) => {
 
     // Comando para listar os servidores onde o bot está presente
     if (message.content.startsWith('/listguilds')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
-            return message.reply("Você não tem perdo. Converse com NetoTTT Discord: netottt");
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
+            return message.reply("Você não tem permissão para usar este comando.");
         }
 
         try {
@@ -655,8 +655,8 @@ client.on('messageCreate', async (message) => {
 
     // Comando para apagar todas as mensagens do bot
     if (message.content.startsWith('/clearbot')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
-            return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
+            return message.reply("Você não tem permissão para usar este comando.");
         }
 
         // Usar uma função assíncrona para esperar as operações de deletar mensagens
@@ -692,8 +692,8 @@ client.on('messageCreate', async (message) => {
 
     // Comando para banir um usuário
     if (message.content.startsWith('/banuser')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
-            return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
+            return message.reply("Você não tem permissão para usar este comando.");
         }
 
         const userId = message.content.split(' ')[1]; // Obtém o ID do usuário a ser banido
@@ -715,8 +715,8 @@ client.on('messageCreate', async (message) => {
 
     // Comando para banir a guilda
     if (message.content.startsWith('/banguild')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
-            return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
+            return message.reply("Você não tem permissão para usar este comando.");
         }
 
         try {
@@ -730,8 +730,8 @@ client.on('messageCreate', async (message) => {
 
     // Comando para desbanir um usuário
     if (message.content.startsWith('/unbanuser')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
-            return message.reply("Você não tem permissão para usar este comando. Converse com NetoTTT Discord: netottt");
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
+            return message.reply("Você não tem permissão para usar este comando.");
         }
 
         const userId = message.content.split(' ')[1]; // Obtém o ID do usuário a ser desbanido
@@ -880,7 +880,7 @@ client.on('messageCreate', async (message) => {
 
     //Remove um usuário do servidor
     if (message.content.startsWith('/kick')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
@@ -902,7 +902,7 @@ client.on('messageCreate', async (message) => {
 
     //Este comando pode ser usado para fazer um anúncio geral em todos os servidores que o bot está
     if (message.content.startsWith('/ann')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
@@ -944,7 +944,7 @@ client.on('messageCreate', async (message) => {
 
     //Silencia um usuário no servidor por um período específico
     if (message.content.startsWith('/mute')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
@@ -971,7 +971,7 @@ client.on('messageCreate', async (message) => {
 
     //Remove o mudo de um usuário
     if (message.content.startsWith('/unmute')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
@@ -1004,7 +1004,7 @@ client.on('messageCreate', async (message) => {
 
     //Permite ao administrador reiniciar o bot remotamente
     if (message.content.startsWith('/restart')) {
-        if (message.author.id !== AUTHORIZED_USER_ID) {
+        if (!AUTHORIZED_USER_IDS.includes(message.author.id)) {
             return message.reply("Você não tem permissão para usar este comando.");
         }
 
