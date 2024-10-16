@@ -65,7 +65,7 @@ async function copiarDocumento() {
                 const seqCollectionRef = docRef.collection('seq');
 
                 // Criar um novo documento dentro da coleção "seq" com o nome "docNameSeq"
-                await seqCollectionRef.doc(`${docName}Seq`)
+                await seqCollectionRef.doc(`${docName}Seq`).set(dados);  // Copia os dados aqui
             }
 
             console.log('Documento e subcoleções copiadas com sucesso!');
@@ -76,6 +76,7 @@ async function copiarDocumento() {
         console.error('Erro ao copiar documento: ', error);
     }
 }
+
 
 
 async function getBossCallRanking() {
@@ -412,7 +413,7 @@ client.on('messageCreate', async (message) => {
 
         // Verifica se o server e boss estão no formato correto
         const validServers = ['na1', 'na2', 'na3', 'na4', 'na5', 'na6', 'sa1', 'sa2', 'sa3', 'sa4', 'sa5', 'sa6', 'sa7', 'sa8', 'eu1', 'eu2', 'eu3', 'eu4', 'eu5', 'eu6', 'a1', 'a2', 'a3', 'a4'];
-        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'gb', 'zb', 'cb', 'wp', 'lc', 'hw', 'snow', 'sc', 'cr', 'br', 'vk','santa'];
+        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'gb', 'zb', 'cb', 'wp', 'lc', 'hw', 'snow', 'sc', 'cr', 'br', 'vk', 'santa'];
         const validP = ["1", "2", "3"];
 
         // Transformar para minúsculo para validação
@@ -442,27 +443,27 @@ client.on('messageCreate', async (message) => {
         if (P === "3") {
             // Obtém a referência do documento do boss
             const seqDoc = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
-            
+
             // Passa a referência do documento para a função P3
             await P3(message, server, seqDoc, boss);
-            
+
             // Receber o resultado de processCallBoss (seqData, serverPositionBeforeUpdate e originalFirstFiveServers)
             const result = await processCallBoss(message, server, boss);
-            
+
             if (result) {
                 // Desestruturar seqData, serverPositionBeforeUpdate e originalFirstFiveServers do resultado
                 const { seqData, serverPositionBeforeUpdate, originalFirstFiveServers } = result;
-                
+
                 // Atualizar registros e dar feedback ao usuário
                 await updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate, originalFirstFiveServers);
-                
+
                 // Você pode fazer algo com originalFirstFiveServers aqui, se necessário
                 console.log(`Os 5 primeiros servidores antes da atualização: ${originalFirstFiveServers.map(s => s.toUpperCase()).join(', ')}`);
             }
             return;
         }
-        
-        
+
+
         // Verificar o cooldown
         const now = Date.now();
         const cooldownAmount = 60 * 1000; // 1 minuto em milissegundos
