@@ -45,22 +45,9 @@ async function addBossCall(username) {
 
 const originalDocRef = dbfire.collection('formulaBoss').doc('sequenciaBoss');
 const docs = {
-    BR: dbfire.collection('formulaBoss').doc('BR'),
-    CB: dbfire.collection('formulaBoss').doc('CB'),
-    CR: dbfire.collection('formulaBoss').doc('CR'),
-    DQ: dbfire.collection('formulaBoss').doc('DQ'),
-    ES: dbfire.collection('formulaBoss').doc('ES'),
-    GK: dbfire.collection('formulaBoss').doc('GK'),
-    GL: dbfire.collection('formulaBoss').doc('GL'),
-    GO: dbfire.collection('formulaBoss').doc('GO'),
-    HW: dbfire.collection('formulaBoss').doc('HW'),
-    KC: dbfire.collection('formulaBoss').doc('KC'),
-    LC: dbfire.collection('formulaBoss').doc('LC'),
-    SC: dbfire.collection('formulaBoss').doc('SC'),
-    SL: dbfire.collection('formulaBoss').doc('SL'),
-    VK: dbfire.collection('formulaBoss').doc('VK'),
-    WP: dbfire.collection('formulaBoss').doc('WP'),
-    ZB: dbfire.collection('formulaBoss').doc('ZB')
+    GB: dbfire.collection('formulaBoss').doc('GB'),
+    SNOW: dbfire.collection('formulaBoss').doc('SNOW'),
+    SANTA: dbfire.collection('formulaBoss').doc('SANTA')
 };
 
 async function copiarDocumento() {
@@ -425,7 +412,7 @@ client.on('messageCreate', async (message) => {
 
         // Verifica se o server e boss estão no formato correto
         const validServers = ['na1', 'na2', 'na3', 'na4', 'na5', 'na6', 'sa1', 'sa2', 'sa3', 'sa4', 'sa5', 'sa6', 'sa7', 'sa8', 'eu1', 'eu2', 'eu3', 'eu4', 'eu5', 'eu6', 'a1', 'a2', 'a3', 'a4'];
-        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'gb', 'zb', 'cb', 'wp', 'lc', 'hw', 'es', 'sc', 'cr', 'br', 'vk'];
+        const validBosses = ['gl', 'kc', 'sl', 'dq', 'gk', 'gb', 'zb', 'cb', 'wp', 'lc', 'hw', 'snow', 'sc', 'cr', 'br', 'vk','santa'];
         const validP = ["1", "2", "3"];
 
         // Transformar para minúsculo para validação
