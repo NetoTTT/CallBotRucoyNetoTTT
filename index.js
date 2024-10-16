@@ -65,7 +65,7 @@ async function copiarDocumento() {
                 const seqCollectionRef = docRef.collection('seq');
 
                 // Criar um novo documento dentro da coleção "seq" com o nome "docNameSeq"
-                await seqCollectionRef.doc(`${docName}Seq`).set(dados);  // Copia os dados aqui
+                await docs.set(dados);  // Copia os dados aqui
             }
 
             console.log('Documento e subcoleções copiadas com sucesso!');
