@@ -240,17 +240,21 @@ async function processCallBoss(message, server, boss) {
 async function updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate, originalFirstFiveServers) {
     try {
         const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
-
+        let P = 3
         // Pegar os primeiros 5 servidores da lista
-        const firstFiveServers = seqData.slice(0, 5);
-        const serverPosition = firstFiveServers.indexOf(server) !== -1 ? firstFiveServers.indexOf(server) + 1 : null;
+        const firstFiveServers = originalFirstFiveServers.slice(0, 5); // Usar a lista original antes da atualização
+        const serverPosition = firstFiveServers.indexOf(server.toUpperCase()) !== -1 ? firstFiveServers.indexOf(server.toUpperCase()) + 1 : null;
         const fullServerPosition = serverPositionBeforeUpdate + 1; // Posição original antes de mover o servidor
+
+        // Se a posição não for encontrada nos primeiros 5, use a posição original antes de mover
+        const spawnPosition = serverPosition || fullServerPosition;
 
         // Atualizar a coleção "seq" dentro do documento do boss
         await bossDocRef.collection('seq').add({
             servers: originalFirstFiveServers, // Salvar os cinco primeiros servidores originais
             server: server.toUpperCase(),
-            spawnPosition: serverPosition || fullServerPosition,
+            spawnPosition: spawnPosition, // Posição correta antes de mover o servidor
+            P: P, // Adicionar o parâmetro P
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
 
@@ -271,6 +275,7 @@ async function updateBossRecords(message, server, boss, seqData, serverPositionB
         message.reply('Erro ao salvar os dados do boss no Firestore.');
     }
 }
+
 
 
 async function P3(message, server, seqDoc, boss) {
