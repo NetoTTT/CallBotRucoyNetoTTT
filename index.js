@@ -212,15 +212,22 @@ async function processCallBoss(message, server, boss) {
 
         let seqData = bossDoc.data().servers || [];
 
+        // Forçar a comparação com maiúsculas para garantir que o servidor seja encontrado
+        const serverUpper = server.toUpperCase();
+
         // Captura a posição original do servidor e os cinco primeiros servidores antes da atualização
-        const serverPositionBeforeUpdate = seqData.indexOf(server.toUpperCase());
-        const originalFirstFiveServers = seqData.slice(0, 5);
+        const serverPositionBeforeUpdate = seqData.indexOf(serverUpper); // Busca a posição correta
+        const originalFirstFiveServers = seqData.slice(0, 5); // Pega os cinco primeiros servidores originais
+
+        // Verificação da posição para debug
+        console.log(`Posição antes da atualização: ${serverPositionBeforeUpdate}`);
+        console.log(`Servidores originais: ${originalFirstFiveServers}`);
 
         // Se o servidor estiver na sequência, removê-lo
-        seqData = seqData.filter(s => s.toUpperCase() !== server.toUpperCase());
+        seqData = seqData.filter(s => s.toUpperCase() !== serverUpper);
 
         // Adiciona o servidor no final da sequência
-        seqData.push(server.toUpperCase());
+        seqData.push(serverUpper);
 
         // Atualizar a sequência no documento do boss
         await bossDocRef.update({
@@ -234,6 +241,7 @@ async function processCallBoss(message, server, boss) {
         message.reply('Ocorreu um erro ao processar o boss. Tente novamente mais tarde.');
     }
 }
+
 
 
 
