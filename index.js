@@ -200,10 +200,8 @@ async function createCallBossIdChannel(guild) {
 
 async function processCallBoss(message, server, boss) {
     try {
-        // Referência ao documento do boss específico
         const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
 
-        // Buscar o documento do boss
         const bossDoc = await bossDocRef.get();
 
         if (!bossDoc.exists) {
@@ -212,58 +210,58 @@ async function processCallBoss(message, server, boss) {
 
         let seqData = bossDoc.data().servers || [];
 
-        // Verificar a posição do servidor antes de removê-lo/adicioná-lo
-        const serverPositionBeforeUpdate = seqData.indexOf(server);
+        // Salvar a posição do servidor antes de removê-lo/adicioná-lo
+        const serverPositionBeforeUpdate = seqData.indexOf(server.toUpperCase()) + 1; // Corrigir o cálculo da posição
 
-        // Salvar os cinco primeiros servidores antes da alteração
-        const originalFirstFiveServers = seqData.slice(0, 5);
+        const originalFirstFiveServers = seqData.slice(0, 5); // Salvar os cinco primeiros servidores
 
         // Remove o servidor se já estiver na sequência
-        seqData = seqData.filter(s => s !== server);
+        seqData = seqData.filter(s => s.toUpperCase() !== server.toUpperCase());
 
         // Adiciona o servidor no final da sequência
-        seqData.push(server);
+        seqData.push(server.toUpperCase());
 
         // Atualizar a sequência no documento do boss
         await bossDocRef.update({
             servers: seqData
         });
 
-        // Retornar a sequência atualizada e a posição original do servidor
-        return { seqData, serverPositionBeforeUpdate, originalFirstFiveServers }; // Retorna a sequência, posição original e os primeiros cinco
+        return { seqData, serverPositionBeforeUpdate, originalFirstFiveServers };
     } catch (error) {
         console.error('Erro ao processar callboss:', error);
         message.reply('Ocorreu um erro ao processar o boss. Tente novamente mais tarde.');
     }
 }
 
+
 async function updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate, originalFirstFiveServers) {
     try {
         const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
-        let P = 3
-        // Pegar os primeiros 5 servidores da lista
-        const firstFiveServers = originalFirstFiveServers.slice(0, 5); // Usar a lista original antes da atualização
-        const serverPosition = firstFiveServers.indexOf(server.toUpperCase()) !== -1 ? firstFiveServers.indexOf(server.toUpperCase()) + 1 : null;
-        const fullServerPosition = serverPositionBeforeUpdate + 1; // Posição original antes de mover o servidor
+        const P = 3;
 
-        // Se a posição não for encontrada nos primeiros 5, use a posição original antes de mover
-        const spawnPosition = serverPosition || fullServerPosition;
+        // Pegar os primeiros 5 servidores da lista original antes da alteração
+        const firstFiveServers = originalFirstFiveServers.slice(0, 5);
+
+        // Verificar se o servidor está entre os primeiros 5 e calcular a posição
+        const serverPosition = firstFiveServers.indexOf(server.toUpperCase()) !== -1 
+            ? firstFiveServers.indexOf(server.toUpperCase()) + 1 
+            : serverPositionBeforeUpdate; // Se não, usa a posição antes de mover
 
         // Atualizar a coleção "seq" dentro do documento do boss
         await bossDocRef.collection('seq').add({
-            servers: originalFirstFiveServers, // Salvar os cinco primeiros servidores originais
+            servers: originalFirstFiveServers,
             server: server.toUpperCase(),
-            spawnPosition: spawnPosition, // Posição correta antes de mover o servidor
-            P: P, // Adicionar o parâmetro P
+            spawnPosition: serverPosition, // Posição correta
+            P: P,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
 
         // Notificar apenas a guilda específica
-        const targetGuildId = '1030587920974888960'; // Substitua pelo ID da sua guild
+        const targetGuildId = '1030587920974888960';
         const targetGuild = client.guilds.cache.get(targetGuildId);
 
         if (targetGuild) {
-            const callBossChannel = targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt'); // Substitua pelo nome do seu canal
+            const callBossChannel = targetGuild.channels.cache.find(channel => channel.name === 'callbossnetottt');
             if (callBossChannel) {
                 callBossChannel.send(`Atualização do boss **${boss.toUpperCase()}**. Dados salvos.`).catch(console.error);
             }
