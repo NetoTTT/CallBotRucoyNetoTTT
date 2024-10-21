@@ -200,8 +200,10 @@ async function createCallBossIdChannel(guild) {
 
 async function processCallBoss(message, server, boss) {
     try {
+        // Referência ao documento do boss específico
         const bossDocRef = dbfire.collection('formulaBoss').doc(boss.toUpperCase());
 
+        // Buscar o documento do boss
         const bossDoc = await bossDocRef.get();
 
         if (!bossDoc.exists) {
@@ -210,12 +212,11 @@ async function processCallBoss(message, server, boss) {
 
         let seqData = bossDoc.data().servers || [];
 
-        // Salvar a posição do servidor antes de removê-lo/adicioná-lo
-        const serverPositionBeforeUpdate = seqData.indexOf(server.toUpperCase()) + 1; // Corrigir o cálculo da posição
+        // Captura a posição original do servidor e os cinco primeiros servidores antes da atualização
+        const serverPositionBeforeUpdate = seqData.indexOf(server.toUpperCase());
+        const originalFirstFiveServers = seqData.slice(0, 5);
 
-        const originalFirstFiveServers = seqData.slice(0, 5); // Salvar os cinco primeiros servidores
-
-        // Remove o servidor se já estiver na sequência
+        // Se o servidor estiver na sequência, removê-lo
         seqData = seqData.filter(s => s.toUpperCase() !== server.toUpperCase());
 
         // Adiciona o servidor no final da sequência
@@ -226,12 +227,14 @@ async function processCallBoss(message, server, boss) {
             servers: seqData
         });
 
-        return { seqData, serverPositionBeforeUpdate, originalFirstFiveServers };
+        // Retornar a sequência atualizada e a posição original do servidor
+        return { seqData, serverPositionBeforeUpdate, originalFirstFiveServers }; 
     } catch (error) {
         console.error('Erro ao processar callboss:', error);
         message.reply('Ocorreu um erro ao processar o boss. Tente novamente mais tarde.');
     }
 }
+
 
 
 async function updateBossRecords(message, server, boss, seqData, serverPositionBeforeUpdate, originalFirstFiveServers) {
