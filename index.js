@@ -13,6 +13,7 @@ admin.initializeApp({
 });
 const dbfire = admin.firestore();
 
+
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CALLBOSS_CHANNEL_NAME = 'callbossnetottt';
 const CALLBOSS_ID_CHANNEL_NAME = 'callbossid'; // Novo canal
